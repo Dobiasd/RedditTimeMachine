@@ -12,4 +12,14 @@ Links generieren ab june 2005
 zb so
 http://www.reddit.com/r/programming/search?q=timestamp:1377993600..1380585600&sort=top&restrict_sr=on&syntax=cloudsearch
 
-noscript text
+noscript text for the html page
+
+title of the html page
+
+adsense wie einbinden? Wenn geht dann anmelden
+
+domain reservieren
+
+info-page mit contact usw
+
+nswf checkbox
