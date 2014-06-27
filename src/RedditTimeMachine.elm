@@ -1,5 +1,6 @@
-import Graphics.Input (Input, input, dropDown, customButton)
+import Graphics.Input (Input, input, dropDown, customButton, clickable)
 import Graphics.Input.Field as Field
+import Date
 import Text
 import String
 import Window
@@ -7,28 +8,26 @@ import Window
 import Sfw
 import Nsfw
 
--- nameField : Input Field.Content
--- nameField = input Field.noContent
-
--- name
--- Field.field Field.defaultStyle name.handle id "Type here!" fieldContent
-
--- from http://subreddits.org/search.html
-
 data Criterion = Relevance | Hot | Top | Comments
 data Interval = Days | Weeks | Months | Years
 
 criterion : Input Criterion
 criterion = input Top
 
+criterionStr : Criterion -> String
+criterionStr c =
+  case c of
+    Relevance -> "relevance"
+    Hot -> "hot"
+    Top -> "top"
+    Comments -> "comments"
+
 criterionDropDown : Element
 criterionDropDown =
-    dropDown criterion.handle
-      [ ("top"      , Top)
-      , ("hot"      , Hot)
-      , ("comments" , Comments)
-      , ("relevance", Relevance)
-      ]
+  let
+    f c = (criterionStr c, c)
+  in
+    dropDown criterion.handle <| map f [Top, Hot, Comments, Relevance]
 
 interval : Input Interval
 interval = input Weeks
@@ -53,20 +52,96 @@ amountDropDown =
     in
       dropDown amount.handle <| map asPair nums
 
+data DatePrec = PrecDay | PrecMonth | PrecYear
+
+showDate : DatePrec -> Date.Date -> String
+showDate prec d =
+  let
+    yearStr = show (Date.year d)
+    monthStr = case prec of
+      PrecYear -> "00"
+      _ -> (monthToIntStr . Date.month) d
+    dayStr = case prec of
+      PrecDay -> show (Date.day d)
+      _ -> "00"
+  in
+    intersperse "-" [yearStr, monthStr, dayStr] |> concat
+
+monthToIntStr m =
+  case m of
+    Date.Jan -> "01"
+    Date.Feb -> "02"
+    Date.Mar -> "03"
+    Date.Apr -> "04"
+    Date.May -> "05"
+    Date.Jun -> "06"
+    Date.Jul -> "07"
+    Date.Aug -> "08"
+    Date.Sep -> "09"
+    Date.Oct -> "10"
+    Date.Nov -> "11"
+    Date.Dec -> "12"
+
+floorTimeToPrec : DatePrec -> Time -> Time
+floorTimeToPrec prec t =
+  [Date.read (showDate prec (Date.fromTime t))]
+  |> justs |> head |> Date.toTime
+
+showTimeRange : (Time, Time) -> String
+showTimeRange (start, end) =
+  showDate PrecDay (Date.fromTime start) ++ " to " ++ showDate PrecDay (Date.fromTime end)
+
+now : Signal Time
+now = every minute
+
 main : Signal Element
 main = scene <~ Window.dimensions
-    ~ nameInput.signal ~ criterion.signal ~ interval.signal ~ amount.signal
+    ~ nameInput.signal ~ criterion.signal ~ interval.signal ~ amount.signal ~ now
 
 nameInput : Input Field.Content
 nameInput = input Field.noContent
 
-showResult : String -> Criterion -> Interval -> Int -> Element
-showResult name criterion interval amount =
-  plainText <| name ++ " " ++ show criterion ++ " " ++
-               show interval ++ " " ++ show amount
+genLink : String -> Criterion -> Time -> Time -> String
+genLink name criterion start end =
+  "http://www.reddit.com/r/" ++ name ++ "/search?q=timestamp:" ++ show (start/1000) ++ ".." ++ show (end/1000) ++ "&sort=" ++ criterionStr criterion ++ "&restrict_sr=on&syntax=cloudsearch"
+
+intervalInMs : Interval -> Time
+intervalInMs i =
+  case i of
+    Days -> 1000*3600*24
+    Weeks -> 1000*3600*24*7
+    _ -> 0
+
+calcRanges : Criterion -> Interval -> Int -> Time
+calcRanges rawName criterion interval amount today =
+  let
+    lastDay =
+    nums = [0..amount]
+
+showResult : String -> Criterion -> Interval -> Int -> Time -> Element
+showResult rawName criterion interval amount now =
+  let
+    today = floorTimeToPrec PrecDay now
+    name = if String.isEmpty rawName then "all" else rawName
+    start = today - 1000*3600*24*10
+    end = today - 1000*3600*24*9
+    url = genLink name criterion start end
+    timeRangeStr = showTimeRange (start, end)
+  in
+    flow down [
+      spacer pageWidth 3 |> color lightOrange
+    , Text.link url (toText ("/r/" ++ name ++ " " ++ timeRangeStr)) |> centered
+    ]
 
 clicks : Input ()
 clicks = input ()
+
+-- todo set name when clicked
+suggestionClick : Input String
+suggestionClick = input ""
+
+pageWidth : Int
+pageWidth = 400
 
 iconSize : Int
 iconSize = 32
@@ -75,7 +150,7 @@ logoHeight : Int
 logoHeight = 100
 
 spacerSize : Int
-spacerSize = 10
+spacerSize = 8
 
 defaultSpacer : Element
 defaultSpacer = spacer spacerSize spacerSize
@@ -113,7 +188,8 @@ header w =
     flow down [
       topBar w
     , title |> container w (heightOf title) midTop
-    , logo |> container w (heightOf logo) midTop ]
+    , logo |> container w (heightOf logo) midTop
+    , defaultSpacer ]
 
 maxSuggestions : Int
 maxSuggestions = 10
@@ -126,6 +202,8 @@ nsfw = Nsfw.nsfw |> lowerFst
 
 overflowIndicator : String
 overflowIndicator = "..."
+
+-- todo: the form may now whiggle while typing
 
 suggestions : String -> [String]
 suggestions query =
@@ -150,17 +228,20 @@ showSuggestion query s =
     showF x = if | x == query -> showQuery s
                  | x == overflowIndicator -> showDots s
                  | otherwise -> showNormal s
+    elem = showF s
+    elemHover = showF s |> color lightBlue
+    elemClick = showF s |> color lightGreen
   in
-    showF s
+    if s == overflowIndicator then elem
+      else customButton suggestionClick.handle "s" elem elemHover elemClick
 
-scene : (Int, Int) -> Field.Content -> Criterion -> Interval -> Int -> Element
-scene (w,h) fieldContent criterion interval amount =
+scene : (Int, Int) -> Field.Content -> Criterion -> Interval -> Int -> Time -> Element
+scene (w,h) fieldContent criterion interval amount now =
   let
     query = fieldContent.string
     nameElem = flow right
              [ Field.field Field.defaultStyle nameInput.handle id "enter subreddit" fieldContent
              , defaultSpacer
-             --, plainText (String.reverse fieldContent.string)
              , suggestions query |> map (showSuggestion query) |> flow down
              , defaultSpacer ]
     labelSizeF = width 100
@@ -168,10 +249,10 @@ scene (w,h) fieldContent criterion interval amount =
            , flow right [ plainText "criterion:" |> labelSizeF, criterionDropDown ]
            , flow right [ plainText "interval:"  |> labelSizeF, intervalDropDown ]
            , flow right [ plainText "amount:"    |> labelSizeF, amountDropDown ]
-           , showResult query criterion interval amount
+           , showResult query criterion interval amount now
            ]
     bodyContent = intersperse (defaultSpacer) rows |> flow down
-    body = container w (heightOf bodyContent) midTop bodyContent
+    body = container pageWidth (heightOf bodyContent) midLeft bodyContent |> container w (heightOf bodyContent) midTop
     page = flow down [ header w, body ] |> color lightGray
   in
     page |> container w (heightOf page) midTop
