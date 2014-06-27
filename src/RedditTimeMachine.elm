@@ -1,4 +1,4 @@
-import Graphics.Input (Input, input, dropDown)
+import Graphics.Input (Input, input, dropDown, customButton)
 import Graphics.Input.Field as Field
 import Text
 import String
@@ -11,7 +11,7 @@ import Window
 -- Field.field Field.defaultStyle name.handle id "Type here!" fieldContent
 
 data Criterion = Relevance | Hot | Top | Comments
-data Interval = Days | Weeks | Months | Years | Forever
+data Interval = Days | Weeks | Months | Years
 
 criterion : Input Criterion
 criterion = input Top
@@ -44,7 +44,7 @@ amountDropDown : Element
 amountDropDown =
     let
       asPair i = (show i, i)
-      nums = map (\x -> 10 * x) [1..50]
+      nums = [10, 20, 50, 100, 200, 500, 1000]
     in
       dropDown amount.handle <| map asPair nums
 
@@ -60,18 +60,59 @@ showResult name criterion interval amount =
   plainText <| name ++ " " ++ show criterion ++ " " ++
                show interval ++ " " ++ show amount
 
+clicks : Input ()
+clicks = input ()
+
+iconSize : Int
+iconSize = 32
+
+logoHeight : Int
+logoHeight = 192
+
+spacerSize : Int
+spacerSize = 10
+
+defaultSpacer : Element
+defaultSpacer = spacer spacerSize spacerSize
+
+shareIcons : Element
+shareIcons =
+  let
+    buttons = 
+      [ ( image iconSize iconSize "icons/facebook.png", "https://www.facebook.com/sharer/sharer.php?u=http://www.reddittimemachine.com" )
+      , ( image iconSize iconSize "icons/twitter.png", "https://twitter.com/home?status=Check%20out%20what%20was%20hot%20on%20reddit%20days/weeks/months%20ago%20at%20http://www.reddittimemachine.com" )
+      , ( image iconSize iconSize "icons/googleplus.png", "https://plus.google.com/share?url=http://www.reddittimemachine.com" )
+      , ( image iconSize iconSize "icons/linkedin.png", "https://www.linkedin.com/shareArticle?mini=true&url=http://www.reddittimemachine.com&title=Reddit%20Time%20Machine&summary=Check%20out%20what%20was%20hot%20on%20reddit%20days/weeks/months%20ago.&source=" )
+      , ( image iconSize iconSize "icons/pinterest.png", "https://pinterest.com/pin/create/button/?url=&media=http://www.reddittimemachine.com&description=Check%20out%20what%20was%20hot%20on%20reddit%20days/weeks/months%20ago." ) ]
+      |> map (\ (img, url) -> customButton clicks.handle () img img img |> link url)
+  in
+    plainText "share on: " :: buttons |> intersperse (defaultSpacer) |> flow right
+
+logo : Element
+logo = image 256 logoHeight "imgs/snoo.png"
+
+header : Int -> Element
+header w =
+    flow down [ defaultSpacer
+    , flow right [ shareIcons, defaultSpacer ] |> container w (heightOf shareIcons) topRight
+    , logo |> container w (heightOf logo) midTop ]
+
 scene : (Int, Int) -> Field.Content -> Criterion -> Interval -> Int -> Element
 scene (w,h) fieldContent criterion interval amount =
   let
-    rows = [ flow right
+    nameElem = flow right
              [ Field.field Field.defaultStyle nameInput.handle id "enter subreddit" fieldContent
-             , spacer 10 10
+             , defaultSpacer
              , plainText (String.reverse fieldContent.string)
-             , spacer 10 10 ]
+             , defaultSpacer ]
+    rows = [ nameElem
            , flow right [ plainText "criterion: ", criterionDropDown ]
            , flow right [ plainText "interval: ", intervalDropDown ]
            , flow right [ plainText "amount: ", amountDropDown ]
            , showResult fieldContent.string criterion interval amount
            ]
+    bodyContent = intersperse (defaultSpacer) rows |> flow down
+    body = container w (heightOf bodyContent) midTop bodyContent
+    page = flow down [ header w, body ]
   in
-    intersperse (spacer 10 10) rows |> flow down |> container w h midTop
+    page |> container w (heightOf page) midTop
