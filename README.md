@@ -12,4 +12,4 @@ Links generieren ab june 2005
 zb so
 http://www.reddit.com/r/programming/search?q=timestamp:1377993600..1380585600&sort=top&restrict_sr=on&syntax=cloudsearch
 
-todo: bei den gefundenen matches den matchenden teil rot malen
+noscript text

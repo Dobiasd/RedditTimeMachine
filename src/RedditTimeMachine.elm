@@ -72,7 +72,7 @@ iconSize : Int
 iconSize = 32
 
 logoHeight : Int
-logoHeight = 192
+logoHeight = 100
 
 spacerSize : Int
 spacerSize = 10
@@ -83,7 +83,7 @@ defaultSpacer = spacer spacerSize spacerSize
 shareIcons : Element
 shareIcons =
   let
-    buttons = 
+    buttons =
       [ ( image iconSize iconSize "icons/facebook.png", "https://www.facebook.com/sharer/sharer.php?u=http://www.reddittimemachine.com" )
       , ( image iconSize iconSize "icons/twitter.png", "https://twitter.com/home?status=Check%20out%20what%20was%20hot%20on%20reddit%20days/weeks/months%20ago%20at%20http://www.reddittimemachine.com" )
       , ( image iconSize iconSize "icons/googleplus.png", "https://plus.google.com/share?url=http://www.reddittimemachine.com" )
@@ -94,7 +94,7 @@ shareIcons =
     plainText "share: " :: buttons |> intersperse (defaultSpacer) |> flow right
 
 logo : Element
-logo = image 256 logoHeight "imgs/snoo.png"
+logo = image 120 logoHeight "imgs/snoo.png"
 
 topBar : Int -> Element
 topBar w =
@@ -109,7 +109,7 @@ header : Int -> Element
 header w =
   let
     title = toText titleText |> centered . Text.color black . Text.height 24
-  in      
+  in
     flow down [
       topBar w
     , title |> container w (heightOf title) midTop
@@ -121,30 +121,54 @@ maxSuggestions = 10
 lowerFst : [(String, a)] -> [(String, a)]
 lowerFst = map (\(s, i) -> (String.toLower s, i))
 
-sfw = Sfw.sfw |> lowerFst 
+sfw = Sfw.sfw |> lowerFst
 nsfw = Nsfw.nsfw |> lowerFst
+
+overflowIndicator : String
+overflowIndicator = "..."
 
 suggestions : String -> [String]
 suggestions query =
   let
-    fitting = filter (String.contains (String.toLower query) . fst) sfw
+    allFitting = filter (String.contains (String.toLower query) . fst) sfw
+    overflow = length allFitting > maxSuggestions
+    nameCnt = if overflow then maxSuggestions - 1 else maxSuggestions
+    fitting = sortBy snd allFitting |> reverse |> take nameCnt |> map fst
+    isIncluded = any (\x -> x == query) fitting
+    names = if isIncluded then fitting else query :: fitting
   in
-    sortBy snd fitting |> reverse |> take maxSuggestions |> map fst
+    if overflow then names ++ [overflowIndicator] else names
+
+showSuggestion : String -> String -> Element
+showSuggestion query s =
+  let
+    showCol : Color -> String -> Element
+    showCol col = centered . Text.color col . Text.height 16 . toText
+    showNormal = showCol black
+    showQuery = showCol darkBrown
+    showDots = showCol darkBlue
+    showF x = if | x == query -> showQuery s
+                 | x == overflowIndicator -> showDots s
+                 | otherwise -> showNormal s
+  in
+    showF s
 
 scene : (Int, Int) -> Field.Content -> Criterion -> Interval -> Int -> Element
 scene (w,h) fieldContent criterion interval amount =
   let
+    query = fieldContent.string
     nameElem = flow right
              [ Field.field Field.defaultStyle nameInput.handle id "enter subreddit" fieldContent
              , defaultSpacer
              --, plainText (String.reverse fieldContent.string)
-             , suggestions fieldContent.string |> map (centered . Text.color black . Text.height 14 . toText) |> flow down
+             , suggestions query |> map (showSuggestion query) |> flow down
              , defaultSpacer ]
+    labelSizeF = width 100
     rows = [ nameElem
-           , flow right [ plainText "criterion: ", criterionDropDown ]
-           , flow right [ plainText "interval: ", intervalDropDown ]
-           , flow right [ plainText "amount: ", amountDropDown ]
-           , showResult fieldContent.string criterion interval amount
+           , flow right [ plainText "criterion:" |> labelSizeF, criterionDropDown ]
+           , flow right [ plainText "interval:"  |> labelSizeF, intervalDropDown ]
+           , flow right [ plainText "amount:"    |> labelSizeF, amountDropDown ]
+           , showResult query criterion interval amount
            ]
     bodyContent = intersperse (defaultSpacer) rows |> flow down
     body = container w (heightOf bodyContent) midTop bodyContent
