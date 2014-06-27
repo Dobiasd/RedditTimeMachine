@@ -4,11 +4,16 @@ import Text
 import String
 import Window
 
+import Sfw
+import Nsfw
+
 -- nameField : Input Field.Content
 -- nameField = input Field.noContent
 
 -- name
 -- Field.field Field.defaultStyle name.handle id "Type here!" fieldContent
+
+-- from http://subreddits.org/search.html
 
 data Criterion = Relevance | Hot | Top | Comments
 data Interval = Days | Weeks | Months | Years
@@ -86,16 +91,45 @@ shareIcons =
       , ( image iconSize iconSize "icons/pinterest.png", "https://pinterest.com/pin/create/button/?url=&media=http://www.reddittimemachine.com&description=Check%20out%20what%20was%20hot%20on%20reddit%20days/weeks/months%20ago." ) ]
       |> map (\ (img, url) -> customButton clicks.handle () img img img |> link url)
   in
-    plainText "share on: " :: buttons |> intersperse (defaultSpacer) |> flow right
+    plainText "share: " :: buttons |> intersperse (defaultSpacer) |> flow right
 
 logo : Element
 logo = image 256 logoHeight "imgs/snoo.png"
 
+topBar : Int -> Element
+topBar w =
+  flow down [ defaultSpacer
+            , flow right [ shareIcons, defaultSpacer ] |> container w (heightOf shareIcons) topRight
+            , defaultSpacer ] |> color lightBlue
+
+titleText : String
+titleText = "reddit time machine"
+
 header : Int -> Element
 header w =
-    flow down [ defaultSpacer
-    , flow right [ shareIcons, defaultSpacer ] |> container w (heightOf shareIcons) topRight
+  let
+    title = toText titleText |> centered . Text.color black . Text.height 24
+  in      
+    flow down [
+      topBar w
+    , title |> container w (heightOf title) midTop
     , logo |> container w (heightOf logo) midTop ]
+
+maxSuggestions : Int
+maxSuggestions = 10
+
+lowerFst : [(String, a)] -> [(String, a)]
+lowerFst = map (\(s, i) -> (String.toLower s, i))
+
+sfw = Sfw.sfw |> lowerFst 
+nsfw = Nsfw.nsfw |> lowerFst
+
+suggestions : String -> [String]
+suggestions query =
+  let
+    fitting = filter (String.contains (String.toLower query) . fst) sfw
+  in
+    sortBy snd fitting |> reverse |> take maxSuggestions |> map fst
 
 scene : (Int, Int) -> Field.Content -> Criterion -> Interval -> Int -> Element
 scene (w,h) fieldContent criterion interval amount =
@@ -103,7 +137,8 @@ scene (w,h) fieldContent criterion interval amount =
     nameElem = flow right
              [ Field.field Field.defaultStyle nameInput.handle id "enter subreddit" fieldContent
              , defaultSpacer
-             , plainText (String.reverse fieldContent.string)
+             --, plainText (String.reverse fieldContent.string)
+             , suggestions fieldContent.string |> map (centered . Text.color black . Text.height 14 . toText) |> flow down
              , defaultSpacer ]
     rows = [ nameElem
            , flow right [ plainText "criterion: ", criterionDropDown ]
@@ -113,6 +148,6 @@ scene (w,h) fieldContent criterion interval amount =
            ]
     bodyContent = intersperse (defaultSpacer) rows |> flow down
     body = container w (heightOf bodyContent) midTop bodyContent
-    page = flow down [ header w, body ]
+    page = flow down [ header w, body ] |> color lightGray
   in
     page |> container w (heightOf page) midTop
