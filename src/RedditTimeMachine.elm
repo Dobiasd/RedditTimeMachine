@@ -112,11 +112,13 @@ intervalInMs i =
     Weeks -> 1000*3600*24*7
     _ -> 0
 
+{-
 calcRanges : Criterion -> Interval -> Int -> Time
 calcRanges rawName criterion interval amount today =
   let
     lastDay =
     nums = [0..amount]
+-}
 
 showResult : String -> Criterion -> Interval -> Int -> Time -> Element
 showResult rawName criterion interval amount now =
@@ -136,7 +138,6 @@ showResult rawName criterion interval amount now =
 clicks : Input ()
 clicks = input ()
 
--- todo set name when clicked
 suggestionClick : Input String
 suggestionClick = input ""
 
@@ -200,15 +201,15 @@ lowerFst = map (\(s, i) -> (String.toLower s, i))
 sfw = Sfw.sfw |> lowerFst
 nsfw = Nsfw.nsfw |> lowerFst
 
+subreddits = sfw ++ nsfw
+
 overflowIndicator : String
 overflowIndicator = "..."
-
--- todo: the form may now whiggle while typing
 
 suggestions : String -> [String]
 suggestions query =
   let
-    allFitting = filter (String.contains (String.toLower query) . fst) sfw
+    allFitting = filter (String.contains (String.toLower query) . fst) subreddits
     overflow = length allFitting > maxSuggestions
     nameCnt = if overflow then maxSuggestions - 1 else maxSuggestions
     fitting = sortBy snd allFitting |> reverse |> take nameCnt |> map fst
