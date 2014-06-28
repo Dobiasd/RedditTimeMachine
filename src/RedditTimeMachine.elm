@@ -198,61 +198,101 @@ maxSuggestions = 10
 lowerFst : [(String, a)] -> [(String, a)]
 lowerFst = map (\(s, i) -> (String.toLower s, i))
 
-sfw = Sfw.sfw |> lowerFst
-nsfw = Nsfw.nsfw |> lowerFst
+refineNames : [(String, Int)] -> [(String, Int)]
+refineNames =  reverse . sortBy snd . lowerFst
 
+sfw : [(String, Int)]
+sfw = refineNames Sfw.sfw
+
+nsfw : [(String, Int)]
+nsfw = refineNames Nsfw.nsfw
+
+subreddits : [(String, Int)]
 subreddits = sfw ++ nsfw
 
 overflowIndicator : String
 overflowIndicator = "..."
 
-suggestions : String -> [String]
-suggestions query =
+genSuggestions : String -> [String]
+genSuggestions query =
   let
-    allFitting = filter (String.contains (String.toLower query) . fst) subreddits
-    overflow = length allFitting > maxSuggestions
-    nameCnt = if overflow then maxSuggestions - 1 else maxSuggestions
-    fitting = sortBy snd allFitting |> reverse |> take nameCnt |> map fst
-    isIncluded = any (\x -> x == query) fitting
-    names = if isIncluded then fitting else query :: fitting
+    allFitting = filter (String.contains query . fst) subreddits
   in
-    if overflow then names ++ [overflowIndicator] else names
+    sortBy ((\x -> -x) . snd) allFitting |> map fst
+
+data Suggestion = SuggStart String | SuggCont String String
 
 showSuggestion : String -> String -> Element
 showSuggestion query s =
   let
-    showCol : Color -> String -> Element
-    showCol col = centered . Text.color col . Text.height 16 . toText
-    showNormal = showCol black
-    showQuery = showCol darkBrown
-    showDots = showCol darkBlue
-    showF x = if | x == query -> showQuery s
-                 | x == overflowIndicator -> showDots s
-                 | otherwise -> showNormal s
-    elem = showF s
-    elemHover = showF s |> color lightBlue
-    elemClick = showF s |> color lightGreen
+    emptyQuery = String.isEmpty query
+    idxs = if emptyQuery then [] else String.indexes query s
   in
-    if s == overflowIndicator then elem
-      else customButton suggestionClick.handle "s" elem elemHover elemClick
+    if emptyQuery || isEmpty idxs
+      then showSuggPart id black s
+      else showSuggestionNonEmptyQuery query s (head idxs)
+
+showSuggPart : (Text -> Text) -> Color -> String -> Element
+showSuggPart f col = centered . f . Text.color col . Text.height 14 . toText
+
+showSuggestionStarting : String -> String -> [Element]
+showSuggestionStarting query s2 =
+  [ showSuggPart bold black query
+  , showSuggPart id black s2
+  , showSuggPart id white ""]
+
+showSuggestionContaining : String -> String -> String -> [Element]
+showSuggestionContaining s1 query s3 =
+  [ showSuggPart id black s1
+  , showSuggPart bold black query
+  , showSuggPart id black s3]
+
+showSuggestionNonEmptyQuery : String -> String -> Int -> Element
+showSuggestionNonEmptyQuery query s idx =
+  let
+    queryLen = String.length query
+    sLen = String.length s
+    slc = String.slice
+    elems =
+      if idx == 0
+        then showSuggestionStarting query (slc queryLen sLen s)
+        else showSuggestionContaining (slc 0 idx s)
+                                      query
+                                      (slc (idx + queryLen) sLen s)
+    elem = flow right elems
+    elemHover = elem |> color lightBlue
+    elemClick = elem |> color lightGreen
+  in
+    customButton suggestionClick.handle "s" elem elemHover elemClick
+
 
 scene : (Int, Int) -> Field.Content -> Criterion -> Interval -> Int -> Time -> Element
 scene (w,h) fieldContent criterion interval amount now =
   let
-    query = fieldContent.string
-    nameElem = flow right
-             [ Field.field Field.defaultStyle nameInput.handle id "enter subreddit" fieldContent
-             , defaultSpacer
-             , suggestions query |> map (showSuggestion query) |> flow down
-             , defaultSpacer ]
+    query = String.toLower fieldContent.string
+    nameElem = Field.field Field.defaultStyle nameInput.handle id "enter subreddit" fieldContent
     labelSizeF = width 100
     rows = [ nameElem
            , flow right [ plainText "criterion:" |> labelSizeF, criterionDropDown ]
            , flow right [ plainText "interval:"  |> labelSizeF, intervalDropDown ]
            , flow right [ plainText "amount:"    |> labelSizeF, amountDropDown ]
-           , showResult query criterion interval amount now
+           , spacer 10 130
            ]
-    bodyContent = intersperse (defaultSpacer) rows |> flow down
+    inputElem = intersperse (defaultSpacer) rows |> flow down
+    bodyContent = flow down [
+                    flow right [ inputElem, defaultSpacer, suggestionsElem ]
+                  , showResult query criterion interval amount now
+                  ]
+
+    suggestions = genSuggestions query
+    suggestionElems = suggestions |> take maxSuggestions |> map (showSuggestion query)
+    suggestionsElem = suggestionElems
+      ++ (if length suggestions > maxSuggestions
+           then [plainText overflowIndicator]
+           else [])
+        |> flow down
+
+
     body = container pageWidth (heightOf bodyContent) midLeft bodyContent |> container w (heightOf bodyContent) midTop
     page = flow down [ header w, body ] |> color lightGray
   in
