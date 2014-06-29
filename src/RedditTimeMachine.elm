@@ -1,4 +1,4 @@
-import Graphics.Input (Input, input, dropDown, customButton, clickable)
+import Graphics.Input (Input, input, dropDown, customButton, clickable, checkbox)
 import Graphics.Input.Field as Field
 import Date
 import Text
@@ -96,7 +96,14 @@ now = every minute
 
 main : Signal Element
 main = scene <~ Window.dimensions
-    ~ nameInput.signal ~ criterion.signal ~ interval.signal ~ amount.signal ~ now
+              ~ sfwCheck.signal
+              ~ nsfwCheck.signal
+              ~ subreddits
+              ~ nameInput.signal
+              ~ criterion.signal
+              ~ interval.signal
+              ~ amount.signal
+              ~ now
 
 nameInput : Input Field.Content
 nameInput = input Field.noContent
@@ -137,6 +144,12 @@ showResult rawName criterion interval amount now =
 
 clicks : Input ()
 clicks = input ()
+
+sfwCheck : Input Bool
+sfwCheck = input True
+
+nsfwCheck : Input Bool
+nsfwCheck = input False
 
 suggestionClick : Input String
 suggestionClick = input ""
@@ -198,14 +211,19 @@ maxSuggestions = 10
 lowerFst : [(String, a)] -> [(String, a)]
 lowerFst = map (\(s, i) -> (String.toLower s, i))
 
-sfw : [(String, Int)]
+sfw : Subreddits
 sfw = lowerFst Sfw.sfw
 
-nsfw : [(String, Int)]
+nsfw : Subreddits
 nsfw = lowerFst Nsfw.nsfw
 
-subreddits : [(String, Int)]
-subreddits = sfw ++ nsfw |> sortBy snd |> reverse
+type Subreddits = [(String, Int)]
+
+subreddits : Signal Subreddits
+subreddits = (\sfwOn nsfwOn ->
+  (if sfwOn then sfw else []) ++
+  (if nsfwOn then nsfw else []) |> sortBy snd |> reverse)
+  <~ sfwCheck.signal ~ nsfwCheck.signal
 
 overflowIndicator : String
 overflowIndicator = "..."
@@ -213,11 +231,11 @@ overflowIndicator = "..."
 containsNotStartsWith : String -> String -> Bool
 containsNotStartsWith a b = String.contains a b && not (String.startsWith a b)
 
-genSuggestions : String -> [String]
-genSuggestions query =
+genSuggestions : Subreddits -> String -> [String]
+genSuggestions names query =
   let
-    allStarting = filter (String.startsWith query . fst) subreddits
-    allContaining = filter (containsNotStartsWith query . fst) subreddits
+    allStarting = filter (String.startsWith query . fst) names
+    allContaining = filter (containsNotStartsWith query . fst) names
   in
     (allStarting ++ allContaining) |> map fst
 
@@ -252,25 +270,28 @@ showSuggestionNonEmptyQuery query s idx =
   in
     customButton suggestionClick.handle "s" elem elemHover elemClick
 
-scene : (Int, Int) -> Field.Content -> Criterion -> Interval -> Int -> Time -> Element
-scene (w,h) fieldContent criterion interval amount now =
+scene : (Int, Int) -> Bool -> Bool -> Subreddits -> Field.Content -> Criterion -> Interval -> Int -> Time -> Element
+scene (w,h) sfwOn nsfwOn names fieldContent criterion interval amount now =
   let
     query = String.toLower fieldContent.string
     nameElem = Field.field Field.defaultStyle nameInput.handle id "enter subreddit" fieldContent
     labelSizeF = width 100
     rows = [ nameElem
+           , flow right [ plainText "sfw:"       |> labelSizeF, checkbox sfwCheck.handle id sfwOn |> width 23 ]
+           , flow right [ plainText "nsfw:"      |> labelSizeF, checkbox nsfwCheck.handle id nsfwOn |> width 23 ]
+           , defaultSpacer
            , flow right [ plainText "criterion:" |> labelSizeF, criterionDropDown ]
            , flow right [ plainText "interval:"  |> labelSizeF, intervalDropDown ]
            , flow right [ plainText "amount:"    |> labelSizeF, amountDropDown ]
-           , spacer 10 130
+           , spacer 10 60
            ]
     inputElem = intersperse (defaultSpacer) rows |> flow down
     bodyContent = flow down [
-                    flow right [ inputElem, defaultSpacer, suggestionsElem ]
+                    flow right [ inputElem, defaultSpacer, defaultSpacer, suggestionsElem ]
                   , showResult query criterion interval amount now
                   ]
 
-    suggestions = genSuggestions query
+    suggestions = genSuggestions names query
     suggestionElems = suggestions |> take maxSuggestions |> map (showSuggestion query)
     suggestionsElem = suggestionElems
       ++ (if length suggestions > maxSuggestions
