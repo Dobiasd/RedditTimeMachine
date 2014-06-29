@@ -26,6 +26,8 @@ adsense wie einbinden? Wenn geht dann anmelden
 
 domain reservieren
 
+erst die startingwith dann die containing suggestions anzeigen
+
 about-page (markdown) mit contact usw (footer = explore (gross), about(klein))
 This webpage is not associated with the official reddit page. It just provides an auxiliary tool to extend the user experience.
 
