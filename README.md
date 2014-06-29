@@ -47,3 +47,5 @@ intervall-ende ist dann nächste Tag minus eine sekunde
 dates dann constructen ueber funktion, die inter mit fromString arbeitet
 
 focus direkt aufs eingabefeld
+
+in module aufteilen
