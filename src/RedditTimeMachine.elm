@@ -208,14 +208,27 @@ header w =
 maxSuggestions : Int
 maxSuggestions = 10
 
+toIntDef : Int -> String -> Int
+toIntDef def x = case String.toInt x of
+  Just res -> res
+  Nothing -> def
+
+parseRawSubreddits : [String] -> [(String, Int)]
+parseRawSubreddits =
+  let
+    parseRawSubreddit raw = String.split "," raw |>
+      (\[a, b] -> (a, toIntDef 0 b))
+  in
+    map parseRawSubreddit
+
 lowerFst : [(String, a)] -> [(String, a)]
 lowerFst = map (\(s, i) -> (String.toLower s, i))
 
 sfw : Subreddits
-sfw = lowerFst Sfw.sfw
+sfw = Sfw.sfwRaw |> parseRawSubreddits |> lowerFst
 
 nsfw : Subreddits
-nsfw = lowerFst Nsfw.nsfw
+nsfw = Nsfw.nsfwRaw |> parseRawSubreddits |> lowerFst
 
 type Subreddits = [(String, Int)]
 
