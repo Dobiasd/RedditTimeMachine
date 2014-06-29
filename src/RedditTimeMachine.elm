@@ -235,36 +235,23 @@ showSuggestion query s =
 showSuggPart : (Text -> Text) -> Color -> String -> Element
 showSuggPart f col = centered . f . Text.color col . Text.height 14 . toText
 
-showSuggestionStarting : String -> String -> [Element]
-showSuggestionStarting query s2 =
-  [ showSuggPart bold black query
-  , showSuggPart id black s2
-  , showSuggPart id white ""]
-
-showSuggestionContaining : String -> String -> String -> [Element]
-showSuggestionContaining s1 query s3 =
-  [ showSuggPart id black s1
-  , showSuggPart bold black query
-  , showSuggPart id black s3]
-
 showSuggestionNonEmptyQuery : String -> String -> Int -> Element
 showSuggestionNonEmptyQuery query s idx =
   let
     queryLen = String.length query
     sLen = String.length s
     slc = String.slice
-    elems =
+    (s1, s2, s3) =
       if idx == 0
-        then showSuggestionStarting query (slc queryLen sLen s)
-        else showSuggestionContaining (slc 0 idx s)
-                                      query
-                                      (slc (idx + queryLen) sLen s)
-    elem = flow right elems
+        then ("", query, slc queryLen sLen s)
+        else (slc 0 idx s, query, slc (idx + queryLen) sLen s)
+    elem = flow right [ showSuggPart id black s1
+                      , showSuggPart bold black s2
+                      , showSuggPart id black s3]
     elemHover = elem |> color lightBlue
     elemClick = elem |> color lightGreen
   in
     customButton suggestionClick.handle "s" elem elemHover elemClick
-
 
 scene : (Int, Int) -> Field.Content -> Criterion -> Interval -> Int -> Time -> Element
 scene (w,h) fieldContent criterion interval amount now =
