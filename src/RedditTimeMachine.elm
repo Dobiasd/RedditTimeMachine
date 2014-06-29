@@ -198,29 +198,28 @@ maxSuggestions = 10
 lowerFst : [(String, a)] -> [(String, a)]
 lowerFst = map (\(s, i) -> (String.toLower s, i))
 
-refineNames : [(String, Int)] -> [(String, Int)]
-refineNames =  reverse . sortBy snd . lowerFst
-
 sfw : [(String, Int)]
-sfw = refineNames Sfw.sfw
+sfw = lowerFst Sfw.sfw
 
 nsfw : [(String, Int)]
-nsfw = refineNames Nsfw.nsfw
+nsfw = lowerFst Nsfw.nsfw
 
 subreddits : [(String, Int)]
-subreddits = sfw ++ nsfw
+subreddits = sfw ++ nsfw |> sortBy snd |> reverse
 
 overflowIndicator : String
 overflowIndicator = "..."
 
+containsNotStartsWith : String -> String -> Bool
+containsNotStartsWith a b = String.contains a b && not (String.startsWith a b)
+
 genSuggestions : String -> [String]
 genSuggestions query =
   let
-    allFitting = filter (String.contains query . fst) subreddits
+    allStarting = filter (String.startsWith query . fst) subreddits
+    allContaining = filter (containsNotStartsWith query . fst) subreddits
   in
-    sortBy ((\x -> -x) . snd) allFitting |> map fst
-
-data Suggestion = SuggStart String | SuggCont String String
+    (allStarting ++ allContaining) |> map fst
 
 showSuggestion : String -> String -> Element
 showSuggestion query s =
