@@ -18,20 +18,14 @@ traffic reduzieren
 
 title of the html page
 
-weg? bei den suggestions erstmal nur die mit startwith anzeigen. Wenn das nicht genug sind, dann die mit was drin.
-
 testen, ob es auf mobile auch fluessig laeuft
 
 adsense wie einbinden? Wenn geht dann anmelden
 
 domain reservieren
 
-erst die startingwith dann die containing suggestions anzeigen
-
 about-page (markdown) mit contact usw (footer = explore (gross), about(klein))
 This webpage is not associated with the official reddit page. It just provides an auxiliary tool to extend the user experience.
-
-nswf checkbox
 
 ".com" in kleiner und grau hinter "reddit time machine" schreiben
 
@@ -49,3 +43,5 @@ dates dann constructen ueber funktion, die inter mit fromString arbeitet
 focus direkt aufs eingabefeld
 
 in module aufteilen
+
+wegmachen, dass bei schnellem Tippen buchstaben gefressen werden
