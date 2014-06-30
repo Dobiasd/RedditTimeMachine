@@ -39,6 +39,7 @@ in module aufteilen
 wegmachen, dass bei schnellem Tippen buchstaben gefressen werden
 https://groups.google.com/forum/#!topic/elm-discuss/Lm-M-PPM2zQ
 Ist jetzt schon besser weil async in JS, aber auch nur zwei Buchstaben im Voraus, dann gibt es doch wieder Stau.
+worker ausprobieren: https://developer.mozilla.org/en/docs/Web/Guide/Performance/Using_web_workers
 
 rollover ueber die suggestions soll nicht haengen bleiben (ganz raus? Dann aber anders als link kennzeichnen. hand mouse cursor?)
 https://github.com/elm-lang/Elm/issues/652
