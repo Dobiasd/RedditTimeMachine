@@ -176,8 +176,6 @@ spacerSize = 8
 defaultSpacer : Element
 defaultSpacer = spacer spacerSize spacerSize
 
--- images a hyperlinks do not work, so a dummy customButton is used
--- https://groups.google.com/forum/#!topic/elm-discuss/K5tHTGDbLLk
 shareIcons : Element
 shareIcons =
   let
