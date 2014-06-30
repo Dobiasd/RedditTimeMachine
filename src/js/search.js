@@ -1,16 +1,23 @@
+sfwOn = true;
+nsfwOn = false;
+subreddits = [];
+query = "";
+isCalculating = false;
+page = undefined;
+
 function InitSearch(newQuery) {
   query = newQuery;
   StartSearch();
 }
 function StartSearch() {
-  Search();
+  isCalculating = false;
+  console.log("go");
+  setTimeout(Search, 1);
 }
 function BuildSubreddits() {
   subreddits = [];
   if (sfwOn) subreddits = subreddits.concat(sfw);
   if (nsfwOn) subreddits = subreddits.concat(nsfw);
-  console.log(sfwOn);
-  console.log(nsfwOn);
 }
 function SfwOn(val) {
   sfwOn = val;
@@ -25,19 +32,26 @@ function NsfwOn(val) {
 function ParseSubreddits(raw) {
   return raw.map(
     function(r) {
-      var name, count;
-      [name, count] = r.split(",");
+      splitted = r.split(",");
+      var name = splitted[0];
+      var count = splitted[1];
       return [name, parseInt(count)];
     });
 }
 function Search() {
+  var isCalculating = true;
   allStarting = [];
   var arrayLength = subreddits.length;
-  for (var i = 0; i < arrayLength; i++) {
+  for (var i = 0; i < arrayLength; ++i) {
     sr = subreddits[i];
     srName = sr[0];
     if (StartsWith(srName, query))
       allStarting.push(sr);
+    if (!isCalculating)
+    {
+      console.log("break1");
+      return;
+    }
   }
   maxSuggestions = 10 + 1; // one more as in elm code for "..."
   allStarting = allStarting.sort(CmpBySndInverse);
@@ -45,15 +59,21 @@ function Search() {
   if (result.length < maxSuggestions)
   {
     allContaining = [];
-    for (var i = 0; i < arrayLength; i++) {
+    for (var i = 0; i < arrayLength; ++i) {
       sr = subreddits[i];
       srName = sr[0]
       if (ContainsAndNotStarts(srName, query))
         allContaining.push(sr);
+      if (!isCalculating)
+      {
+        console.log("break2");
+        return;
+      }
     }
     allContaining = allContaining.sort(CmpBySndInverse);
     result = result.concat(allContaining.map(Fst));
   }
+
   result = result.slice(0, maxSuggestions);
   page.ports.suggestionList.send(result.join());
 }

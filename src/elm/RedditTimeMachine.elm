@@ -8,6 +8,8 @@ import Text
 import String
 import Window
 
+import Debug
+
 import Suggestions(showSuggestion, sfwCheck, nsfwCheck, maxSuggestions, overflowIndicator, Subreddits, subreddits, suggestionClick)
 
 port search : Signal String
@@ -20,6 +22,9 @@ port nsfwOn : Signal Bool
 port nsfwOn = nsfwCheck.signal
 
 port suggestionList : Signal String
+
+asd : Signal String
+asd = (\s -> Debug.log "suggestionList" s) <~ suggestionList
 
 suggestions : Signal [String]
 suggestions = String.split "," <~ suggestionList
@@ -89,7 +94,7 @@ showDate prec d =
       PrecYear -> "00"
       _ -> (monthToIntStr . Date.month) d
     dayStr = case prec of
-      PrecDay -> show (Date.day d)
+      PrecDay -> show (Date.day d) |> String.padLeft 2 '0'
       _ -> "00"
   in
     intersperse "-" [yearStr, monthStr, dayStr] |> concat

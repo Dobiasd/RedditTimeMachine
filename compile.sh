@@ -15,13 +15,15 @@ cp $HOME/.cabal/share/Elm-0.12.3/elm-runtime.js ./build/js
 for pathname in ./src/js/*.js
 do
     filename="${pathname##*/}"
-    uglifyjs "$pathname" > "./build/js/$filename"
+    #uglifyjs "$pathname" > "./build/js/$filename"
+    cp "$pathname" "./build/js/$filename"
 done
 
 for pathname in ./build/src/elm/*.js
 do
     filename="${pathname##*/}"
-    uglifyjs "$pathname" > "./build/js/$filename"
+    #uglifyjs "$pathname" > "./build/js/$filename"
+    cp "$pathname" "./build/js/$filename"
 done
 
 cp ./src/index.html ./build/index.html

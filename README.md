@@ -18,12 +18,11 @@ set title initially and not only after first input
 
 testen, ob es auf mobile auch laeuft
 
-adsense wie einbinden? Wenn geht dann anmelden
-https://groups.google.com/forum/#!topic/elm-discuss/hixIOJGNrf8
-
 domain reservieren
 
-about-page (markdown) mit contact usw (footer = explore (gross), about (klein))
+trennlinie schmaler
+
+about-page (markdown) mit contact usw (trennlinie, footer = explore (gross), about (klein))
 This webpage is not associated with the official reddit page. It just provides an auxiliary tool to extend the user experience.
 
 ausgabe bei monaten und wochen auf jahre aufteilen, bei tagen auf monate
@@ -39,6 +38,7 @@ in module aufteilen
 
 wegmachen, dass bei schnellem Tippen buchstaben gefressen werden
 https://groups.google.com/forum/#!topic/elm-discuss/Lm-M-PPM2zQ
+Ist jetzt schon besser weil async in JS, aber auch nur zwei Buchstaben im Voraus, dann gibt es doch wieder Stau.
 
 rollover ueber die suggestions soll nicht haengen bleiben (ganz raus? Dann aber anders als link kennzeichnen. hand mouse cursor?)
 https://github.com/elm-lang/Elm/issues/652

@@ -16,10 +16,6 @@
     <div id="main"></div>
   </body>
   <script type="text/javascript">
-    sfwOn = true;
-    nsfwOn = false;
-    subreddits = [];
-    query = "";
     function Init() {
       sfw = ParseSubreddits(sfwRaw);
       nsfw = ParseSubreddits(nsfwRaw);
@@ -27,7 +23,7 @@
       var mainDiv = document.getElementById('main');
       page = Elm.embed(Elm.RedditTimeMachine,
                        mainDiv,
-                       {suggestionList:"..."});
+                       {suggestionList:""});
       page.ports.search.subscribe(InitSearch);
       page.ports.sfwOn.subscribe(SfwOn);
       page.ports.nsfwOn.subscribe(NsfwOn);
