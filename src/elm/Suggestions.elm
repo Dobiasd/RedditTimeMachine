@@ -1,6 +1,6 @@
 module Suggestions where
 
-import Graphics.Input (Input, input, customButton)
+import Graphics.Input (Input, input, button, customButton)
 
 import Sfw
 import Nsfw
@@ -50,14 +50,6 @@ overflowIndicator = "..."
 containsNotStartsWith : String -> String -> Bool
 containsNotStartsWith a b = String.contains a b && not (String.startsWith a b)
 
-genSuggestions : Subreddits -> String -> [String]
-genSuggestions names query =
-  let
-    allStarting = filter (String.startsWith query . fst) names
-    allContaining = filter (containsNotStartsWith query . fst) names
-  in
-    (allStarting ++ allContaining) |> map fst
-
 showSuggestion : String -> String -> Element
 showSuggestion query s =
   let
@@ -88,6 +80,7 @@ showSuggestionNonEmptyQuery query s idx =
     elemClick = elem |> color lightGreen
   in
     customButton suggestionClick.handle s elem elemHover elemClick
+    --button suggestionClick.handle s s
 
 suggestionClick : Input String
 suggestionClick = input ""

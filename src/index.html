@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="keywords" content="Reddit,Time,Machine,search,subreddits,day,week,month,year,sort,hot,top,comments,relevance">
+    <title>todo.</title>
+    <script type="text/javascript" src="js/elm-runtime.js"></script>
+    <script type="text/javascript" src="js/RedditTimeMachine.js"></script>
+    <script type="text/javascript" src="js/sfw.js"></script>
+    <script type="text/javascript" src="js/nsfw.js"></script>
+    <script type="text/javascript" src="js/search.js"></script>
+    <link rel="stylesheet" type="text/css" href="style.css" media="screen">
+  </head>
+  <body onload="Init()">
+    <div id="ads">ads</div>
+    <div id="main"></div>
+  </body>
+  <script type="text/javascript">
+    sfwOn = true;
+    nsfwOn = false;
+    subreddits = [];
+    query = "";
+    function Init() {
+      sfw = ParseSubreddits(sfwRaw);
+      nsfw = ParseSubreddits(nsfwRaw);
+      BuildSubreddits();
+      var mainDiv = document.getElementById('main');
+      page = Elm.embed(Elm.RedditTimeMachine,
+                       mainDiv,
+                       {suggestionList:"..."});
+      page.ports.search.subscribe(InitSearch);
+      page.ports.sfwOn.subscribe(SfwOn);
+      page.ports.nsfwOn.subscribe(NsfwOn);
+      InitSearch("");
+    }
+  </script>
+</html>

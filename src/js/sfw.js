@@ -1,5 +1,3 @@
-module Sfw where
-sfwRaw : [String]
 sfwRaw = [
     "00sRock,525"
   , "07Cheating,9"

@@ -10,7 +10,21 @@ import Window
 
 import Debug
 
-import Suggestions(genSuggestions, showSuggestion, sfwCheck, nsfwCheck, maxSuggestions, overflowIndicator, Subreddits, subreddits, suggestionClick)
+import Suggestions(showSuggestion, sfwCheck, nsfwCheck, maxSuggestions, overflowIndicator, Subreddits, subreddits, suggestionClick)
+
+port search : Signal String
+port search = .string <~ nameInput.signal
+
+port sfwOn : Signal Bool
+port sfwOn = sfwCheck.signal
+
+port nsfwOn : Signal Bool
+port nsfwOn = nsfwCheck.signal
+
+port suggestionList : Signal String
+
+suggestions : Signal [String]
+suggestions = String.split "," <~ suggestionList
 
 data Criterion = Relevance | Hot | Top | Comments
 data Interval = Days | Weeks | Months | Years
@@ -120,7 +134,7 @@ main : Signal Element
 main = scene <~ Window.dimensions
               ~ sfwCheck.signal
               ~ nsfwCheck.signal
-              ~ subreddits
+              ~ suggestions
               ~ merge nameInput.signal
                       (suggClickStringToContent <~ suggestionClick.signal)
               ~ criterion.signal
@@ -222,8 +236,8 @@ header w =
     , logo |> container w (heightOf logo) midTop
     , defaultSpacer ]
 
-scene : (Int, Int) -> Bool -> Bool -> Subreddits -> Field.Content -> Criterion -> Interval -> Int -> Time -> Element
-scene (w,h) sfwOn nsfwOn names fieldContent criterion interval amount now =
+scene : (Int, Int) -> Bool -> Bool -> [String] -> Field.Content -> Criterion -> Interval -> Int -> Time -> Element
+scene (w,h) sfwOn nsfwOn suggestions fieldContent criterion interval amount now =
   let
     query = String.toLower fieldContent.string
     nameElem = Field.field Field.defaultStyle nameInput.handle id "enter subreddit" fieldContent
@@ -243,7 +257,6 @@ scene (w,h) sfwOn nsfwOn names fieldContent criterion interval amount now =
                   , showResult query criterion interval amount now
                   ]
 
-    suggestions = genSuggestions names query
     suggestionElems = suggestions |> take maxSuggestions |> map (showSuggestion query)
     suggestionsElem = suggestionElems
       ++ (if length suggestions > maxSuggestions
