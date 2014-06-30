@@ -1,13 +1,16 @@
 module RedditTimeMachine where
 
 import Graphics.Input (Input, input, dropDown, checkbox, customButton)
+import Graphics.Input
 import Graphics.Input.Field as Field
 import Date
 import Text
 import String
 import Window
 
-import Suggestions(genSuggestions, showSuggestion, sfwCheck, nsfwCheck, maxSuggestions, overflowIndicator, Subreddits, subreddits)
+import Debug
+
+import Suggestions(genSuggestions, showSuggestion, sfwCheck, nsfwCheck, maxSuggestions, overflowIndicator, Subreddits, subreddits, suggestionClick)
 
 
 data Criterion = Relevance | Hot | Top | Comments
@@ -96,12 +99,20 @@ showTimeRange (start, end) =
 now : Signal Time
 now = every minute
 
+suggClickStringToContent : String -> Field.Content
+suggClickStringToContent s =
+    { string = Debug.log "s:" s
+    , selection = { start = 0
+                  , end = 0
+                  , direction = Field.Forward } }
+
 main : Signal Element
 main = scene <~ Window.dimensions
               ~ sfwCheck.signal
               ~ nsfwCheck.signal
               ~ subreddits
-              ~ nameInput.signal
+              ~ merge nameInput.signal
+                      (suggClickStringToContent <~ suggestionClick.signal)
               ~ criterion.signal
               ~ interval.signal
               ~ amount.signal

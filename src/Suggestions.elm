@@ -87,7 +87,7 @@ showSuggestionNonEmptyQuery query s idx =
     elemHover = elem |> color lightBlue
     elemClick = elem |> color lightGreen
   in
-    customButton suggestionClick.handle "s" elem elemHover elemClick
+    customButton suggestionClick.handle s elem elemHover elemClick
 
 suggestionClick : Input String
 suggestionClick = input ""
