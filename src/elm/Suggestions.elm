@@ -2,9 +2,6 @@ module Suggestions where
 
 import Graphics.Input (Input, input, button, customButton)
 
-import Sfw
-import Nsfw
-
 maxSuggestions : Int
 maxSuggestions = 10
 
@@ -13,23 +10,6 @@ toIntDef def x = case String.toInt x of
   Just res -> res
   Nothing -> def
 
-parseRawSubreddits : [String] -> [(String, Int)]
-parseRawSubreddits =
-  let
-    parseRawSubreddit raw = String.split "," raw |>
-      (\[a, b] -> (a, toIntDef 0 b))
-  in
-    map parseRawSubreddit
-
-lowerFst : [(String, a)] -> [(String, a)]
-lowerFst = map (\(s, i) -> (String.toLower s, i))
-
-sfw : Subreddits
-sfw = Sfw.sfwRaw |> parseRawSubreddits |> lowerFst
-
-nsfw : Subreddits
-nsfw = Nsfw.nsfwRaw |> parseRawSubreddits |> lowerFst
-
 type Subreddits = [(String, Int)]
 
 sfwCheck : Input Bool
@@ -37,12 +17,6 @@ sfwCheck = input True
 
 nsfwCheck : Input Bool
 nsfwCheck = input False
-
-subreddits : Signal Subreddits
-subreddits = (\sfwOn nsfwOn ->
-  (if sfwOn then sfw else []) ++
-  (if nsfwOn then nsfw else []) |> sortBy snd |> reverse)
-  <~ sfwCheck.signal ~ nsfwCheck.signal
 
 overflowIndicator : String
 overflowIndicator = "..."
