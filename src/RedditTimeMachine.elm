@@ -12,9 +12,19 @@ import Debug
 
 import Suggestions(genSuggestions, showSuggestion, sfwCheck, nsfwCheck, maxSuggestions, overflowIndicator, Subreddits, subreddits, suggestionClick)
 
-
 data Criterion = Relevance | Hot | Top | Comments
 data Interval = Days | Weeks | Months | Years
+
+genTitle : Field.Content -> String
+genTitle fieldContent =
+  let
+    name = fieldContent.string
+    addOn = if String.isEmpty name then "" else " -> " ++ name
+  in
+    "Reddit Time Machine - check out what was hot on reddit days/weeks/months ago" ++ addOn
+
+port title : Signal String
+port title = genTitle <~ nameInput.signal
 
 criterion : Input Criterion
 criterion = input Top

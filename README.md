@@ -14,7 +14,7 @@ http://www.reddit.com/r/programming/search?q=timestamp:1377993600..1380585600&so
 
 noscript text for the html page
 
-title of the html page
+set title initially and not only after first input
 
 testen, ob es auf mobile auch fluessig laeuft
 
@@ -23,7 +23,7 @@ https://groups.google.com/forum/#!topic/elm-discuss/hixIOJGNrf8
 
 domain reservieren
 
-about-page (markdown) mit contact usw (footer = explore (gross), about(klein))
+about-page (markdown) mit contact usw (footer = explore (gross), about (klein))
 This webpage is not associated with the official reddit page. It just provides an auxiliary tool to extend the user experience.
 
 ausgabe bei monaten und wochen auf jahre aufteilen, bei tagen auf monate
