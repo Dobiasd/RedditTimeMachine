@@ -16,7 +16,7 @@ noscript text for the html page
 
 set title initially and not only after first input
 
-testen, ob es auf mobile auch fluessig laeuft
+testen, ob es auf mobile auch laeuft
 
 adsense wie einbinden? Wenn geht dann anmelden
 https://groups.google.com/forum/#!topic/elm-discuss/hixIOJGNrf8
@@ -41,6 +41,7 @@ wegmachen, dass bei schnellem Tippen buchstaben gefressen werden
 https://groups.google.com/forum/#!topic/elm-discuss/Lm-M-PPM2zQ
 
 rollover ueber die suggestions soll nicht haengen bleiben (ganz raus? Dann aber anders als link kennzeichnen. hand mouse cursor?)
+https://github.com/elm-lang/Elm/issues/652
 
 click auf eine suggestion muss den richtigen wert setzen (wenn nicht geht, normalen button verwenden, der hat aber leider nix fettgedrucktes)
 https://groups.google.com/forum/#!topic/elm-discuss/V7frjla1ZoE
