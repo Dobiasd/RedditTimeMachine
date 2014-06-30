@@ -8,8 +8,6 @@ import Text
 import String
 import Window
 
-import Debug
-
 import Suggestions(showSuggestion, sfwCheck, nsfwCheck, maxSuggestions, overflowIndicator, Subreddits, subreddits, suggestionClick)
 
 port search : Signal String
@@ -125,7 +123,7 @@ now = every minute
 
 suggClickStringToContent : String -> Field.Content
 suggClickStringToContent s =
-    { string = Debug.log "s:" s
+    { string = s
     , selection = { start = 0
                   , end = 0
                   , direction = Field.Forward } }
