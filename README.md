@@ -5,6 +5,9 @@ http://www.reddit.com/r/help/comments/27eziq/view_top_posts_of_a_specific_timesp
 
 http://www.reddit.com/dev/api
 
+
+todo:
+
 Links generieren ab june 2005:
 http://www.reddit.com/r/programming/search?q=timestamp:1377993600..1380585600&sort=top&restrict_sr=on&syntax=cloudsearch
 
@@ -15,6 +18,7 @@ title of the html page
 testen, ob es auf mobile auch fluessig laeuft
 
 adsense wie einbinden? Wenn geht dann anmelden
+https://groups.google.com/forum/#!topic/elm-discuss/hixIOJGNrf8
 
 domain reservieren
 
@@ -31,7 +35,9 @@ intervall-ende ist dann nächste Tag minus eine sekunde
 dates dann constructen ueber funktion, die intern mit fromString arbeitet
 
 focus direkt aufs eingabefeld
+https://groups.google.com/forum/#!topic/elm-discuss/d6B3D6suJNw
 
 in module aufteilen
 
 wegmachen, dass bei schnellem Tippen buchstaben gefressen werden
+https://groups.google.com/forum/#!topic/elm-discuss/Lm-M-PPM2zQ
