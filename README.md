@@ -29,9 +29,8 @@ This webpage is not associated with the official reddit page. It just provides a
 ausgabe bei monaten und wochen auf jahre aufteilen, bei tagen auf monate
 Die ist dann soviele spalten breit, wie ins fenster passen
 
-intervall-ende ist dann nächste Tag minus eine sekunde
-
 dates constructen ueber funktion, die intern mit fromString arbeitet
+intervall-ende ist dann nächste Tag minus eine sekunde
 
 focus direkt aufs eingabefeld
 https://groups.google.com/forum/#!topic/elm-discuss/d6B3D6suJNw
