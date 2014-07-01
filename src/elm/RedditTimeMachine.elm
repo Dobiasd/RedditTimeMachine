@@ -8,40 +8,27 @@ import Text
 import String
 import Window
 
-import Debug
+import Layout(defaultSpacer, pageWidth, bgColor)
 
-import Suggestions(showSuggestion, sfwCheck, nsfwCheck, maxSuggestions, overflowIndicator, Subreddits, subreddits, suggestionClick)
+import Suggestions(genSuggestions, showSuggestion, sfwCheck, nsfwCheck, maxSuggestions, overflowIndicator, Subreddits, subreddits, suggestionClick)
 
-port search : Signal String
-port search = .string <~ nameInput.signal
+port query : Signal String
 
-port sfwOn : Signal Bool
-port sfwOn = sfwCheck.signal
+port title : Signal String
+port title = genTitle <~ query
 
-port nsfwOn : Signal Bool
-port nsfwOn = nsfwCheck.signal
-
-port suggestionList : Signal String
-
-asd : Signal String
-asd = (\s -> Debug.log "suggestionList" s) <~ suggestionList
-
-suggestions : Signal [String]
-suggestions = String.split "," <~ suggestionList
+port selected : Signal String
+port selected = suggestionClick.signal
 
 data Criterion = Relevance | Hot | Top | Comments
 data Interval = Days | Weeks | Months | Years
 
-genTitle : Field.Content -> String
-genTitle fieldContent =
+genTitle : String -> String
+genTitle name =
   let
-    name = fieldContent.string
     addOn = if String.isEmpty name then "" else " -> " ++ name
   in
     "Reddit Time Machine - check out what was hot on reddit days/weeks/months ago" ++ addOn
-
-port title : Signal String
-port title = genTitle <~ nameInput.signal
 
 criterion : Input Criterion
 criterion = input Top
@@ -126,27 +113,16 @@ showTimeRange (start, end) =
 now : Signal Time
 now = every minute
 
-suggClickStringToContent : String -> Field.Content
-suggClickStringToContent s =
-    { string = s
-    , selection = { start = 0
-                  , end = 0
-                  , direction = Field.Forward } }
-
 main : Signal Element
 main = scene <~ Window.dimensions
               ~ sfwCheck.signal
               ~ nsfwCheck.signal
-              ~ suggestions
-              ~ merge nameInput.signal
-                      (suggClickStringToContent <~ suggestionClick.signal)
+              ~ subreddits
+              ~ merge (String.toLower <~ query) suggestionClick.signal
               ~ criterion.signal
               ~ interval.signal
               ~ amount.signal
               ~ now
-
-nameInput : Input Field.Content
-nameInput = input Field.noContent
 
 genLink : String -> Criterion -> Time -> Time -> String
 genLink name criterion start end =
@@ -182,71 +158,11 @@ showResult rawName criterion interval amount now =
     , Text.link url (toText ("/r/" ++ name ++ " " ++ timeRangeStr)) |> centered
     ]
 
-clicks : Input ()
-clicks = input ()
-
-pageWidth : Int
-pageWidth = 400
-
-iconSize : Int
-iconSize = 32
-
-logoHeight : Int
-logoHeight = 100
-
-logoWidth : Int
-logoWidth = 120
-
-spacerSize : Int
-spacerSize = 8
-
-defaultSpacer : Element
-defaultSpacer = spacer spacerSize spacerSize
-
-shareIcons : Element
-shareIcons =
+scene : (Int, Int) -> Bool -> Bool -> Subreddits -> String -> Criterion -> Interval -> Int -> Time -> Element
+scene (w,h) sfwOn nsfwOn names query criterion interval amount now =
   let
-    buttons =
-      [ ( image iconSize iconSize "icons/facebook.png", "https://www.facebook.com/sharer/sharer.php?u=http://www.reddittimemachine.com" )
-      , ( image iconSize iconSize "icons/twitter.png", "https://twitter.com/home?status=Check%20out%20what%20was%20hot%20on%20reddit%20days/weeks/months%20ago%20at%20http://www.reddittimemachine.com" )
-      , ( image iconSize iconSize "icons/googleplus.png", "https://plus.google.com/share?url=http://www.reddittimemachine.com" )
-      , ( image iconSize iconSize "icons/linkedin.png", "https://www.linkedin.com/shareArticle?mini=true&url=http://www.reddittimemachine.com&title=Reddit%20Time%20Machine&summary=Check%20out%20what%20was%20hot%20on%20reddit%20days/weeks/months%20ago.&source=" )
-      , ( image iconSize iconSize "icons/pinterest.png", "https://pinterest.com/pin/create/button/?url=&media=http://www.reddittimemachine.com&description=Check%20out%20what%20was%20hot%20on%20reddit%20days/weeks/months%20ago." ) ]
-      |> map (\ (img, url) -> customButton clicks.handle () img img img |> link url)
-  in
-    plainText "share: " :: buttons |> intersperse (defaultSpacer) |> flow right
-
-logo : Element
-logo = image logoWidth logoHeight "imgs/snoo.png"
-
-topBar : Int -> Element
-topBar w =
-  flow down [ defaultSpacer
-            , flow right [ shareIcons, defaultSpacer ] |> container w (heightOf shareIcons) topRight
-            , defaultSpacer ] |> color lightBlue
-
-header : Int -> Element
-header w =
-  let
-    title = flow right [
-      toText "reddit time machine" |> centered . Text.color black . Text.height 24
-    , toText " .com" |> centered . Text.color darkGray . Text.height 16
-    ]
-  in
-    flow down [
-      topBar w
-    , title |> container w (heightOf title) midTop
-    , logo |> container w (heightOf logo) midTop
-    , defaultSpacer ]
-
-scene : (Int, Int) -> Bool -> Bool -> [String] -> Field.Content -> Criterion -> Interval -> Int -> Time -> Element
-scene (w,h) sfwOn nsfwOn suggestions fieldContent criterion interval amount now =
-  let
-    query = String.toLower fieldContent.string
-    nameElem = Field.field Field.defaultStyle nameInput.handle id "enter subreddit" fieldContent
     labelSizeF = width 100
-    rows = [ nameElem
-           , flow right [ plainText "sfw:"       |> labelSizeF, checkbox sfwCheck.handle id sfwOn |> width 23 ]
+    rows = [ flow right [ plainText "sfw:"       |> labelSizeF, checkbox sfwCheck.handle id sfwOn |> width 23 ]
            , flow right [ plainText "nsfw:"      |> labelSizeF, checkbox nsfwCheck.handle id nsfwOn |> width 23 ]
            , defaultSpacer
            , flow right [ plainText "sorted by:" |> labelSizeF, criterionDropDown ]
@@ -259,7 +175,7 @@ scene (w,h) sfwOn nsfwOn suggestions fieldContent criterion interval amount now 
                     flow right [ inputElem, defaultSpacer, defaultSpacer, suggestionsElem ]
                   , showResult query criterion interval amount now
                   ]
-
+    suggestions = genSuggestions names query
     suggestionElems = suggestions |> take maxSuggestions |> map (showSuggestion query)
     suggestionsElem = suggestionElems
       ++ (if length suggestions > maxSuggestions
@@ -267,8 +183,7 @@ scene (w,h) sfwOn nsfwOn suggestions fieldContent criterion interval amount now 
            else [])
         |> flow down
 
-
     body = container pageWidth (heightOf bodyContent) midLeft bodyContent |> container w (heightOf bodyContent) midTop
-    page = flow down [ header w, body ] |> color lightGray
+    page = body |> color bgColor
   in
     page |> container w (heightOf page) midTop

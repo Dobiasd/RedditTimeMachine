@@ -5,29 +5,40 @@
     <meta name="keywords" content="Reddit,Time,Machine,search,subreddits,day,week,month,year,sort,hot,top,comments,relevance">
     <title>todo.</title>
     <script type="text/javascript" src="js/elm-runtime.js"></script>
+    <script type="text/javascript" src="js/Header.js"></script>
     <script type="text/javascript" src="js/RedditTimeMachine.js"></script>
-    <script type="text/javascript" src="js/sfw.js"></script>
-    <script type="text/javascript" src="js/nsfw.js"></script>
-    <script type="text/javascript" src="js/search.js"></script>
     <link rel="stylesheet" type="text/css" href="style.css" media="screen">
   </head>
   <body onload="Init()">
     <div id="ads">ads</div>
+    <div id="header"></div>
+    <div id="query"><input type="text" id="queryField" placeholder="enter subreddit"></div>
     <div id="main"></div>
   </body>
   <script type="text/javascript">
     function Init() {
-      sfw = ParseSubreddits(sfwRaw);
-      nsfw = ParseSubreddits(nsfwRaw);
-      BuildSubreddits();
+      lastQuery = "";
+      document.getElementById("queryField").value = "";
+
+      var headerDiv = document.getElementById('header');
+      header = Elm.embed(Elm.Header, headerDiv);
+
       var mainDiv = document.getElementById('main');
-      page = Elm.embed(Elm.RedditTimeMachine,
-                       mainDiv,
-                       {suggestionList:""});
-      page.ports.search.subscribe(InitSearch);
-      page.ports.sfwOn.subscribe(SfwOn);
-      page.ports.nsfwOn.subscribe(NsfwOn);
-      InitSearch("");
+      page = Elm.embed(Elm.RedditTimeMachine, mainDiv, {query:""});
+
+      page.ports.selected.subscribe(Selected);
+
+      setInterval(CheckQuery, 100);
+    }
+    function CheckQuery() {
+      query = document.getElementById("queryField").value;
+      if (query != lastQuery) {
+        lastQuery = query;
+        page.ports.query.send(query);
+      }
+    }
+    function Selected(name) {
+      document.getElementById("queryField").value = name;
     }
   </script>
 </html>

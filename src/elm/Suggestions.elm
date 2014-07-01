@@ -2,6 +2,9 @@ module Suggestions where
 
 import Graphics.Input (Input, input, button, customButton)
 
+import Sfw
+import Nsfw
+
 maxSuggestions : Int
 maxSuggestions = 10
 
@@ -10,7 +13,30 @@ toIntDef def x = case String.toInt x of
   Just res -> res
   Nothing -> def
 
+parseRawSubreddits : [String] -> Subreddits
+parseRawSubreddits =
+  let
+    parseRawSubreddit raw = String.split "," raw |>
+      (\[a, b] -> (a, toIntDef 0 b))
+  in
+    map parseRawSubreddit
+
+lowerFst : [(String, a)] -> [(String, a)]
+lowerFst = map (\(s, i) -> (String.toLower s, i))
+
+sfw : Subreddits
+sfw = Sfw.sfwRaw |> parseRawSubreddits |> lowerFst
+
+nsfw : Subreddits
+nsfw = Nsfw.nsfwRaw |> parseRawSubreddits |> lowerFst
+
 type Subreddits = [(String, Int)]
+
+subreddits : Signal Subreddits
+subreddits = (\sfwOn nsfwOn ->
+  (if sfwOn then sfw else []) ++
+  (if nsfwOn then nsfw else []) |> sortBy snd |> reverse)
+  <~ sfwCheck.signal ~ nsfwCheck.signal
 
 sfwCheck : Input Bool
 sfwCheck = input True
@@ -20,6 +46,14 @@ nsfwCheck = input False
 
 overflowIndicator : String
 overflowIndicator = "..."
+
+genSuggestions : Subreddits -> String -> [String]
+genSuggestions names query =
+  let
+    allStarting = filter (String.startsWith query . fst) names
+    allContaining = filter (containsNotStartsWith query . fst) names
+  in
+    (allStarting ++ allContaining) |> map fst
 
 containsNotStartsWith : String -> String -> Bool
 containsNotStartsWith a b = String.contains a b && not (String.startsWith a b)

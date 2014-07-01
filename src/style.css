@@ -7,3 +7,20 @@
   margin-left: auto;
   margin-right: auto;
 }
+
+#header {
+}
+
+#query {
+  width: 200px;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+#queryField {
+  width: 200px;
+}
+
+#main {
+}
