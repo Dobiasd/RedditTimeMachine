@@ -12,7 +12,7 @@ todo:
 Links generieren ab june 2005:
 http://www.reddit.com/r/programming/search?q=timestamp:1377993600..1380585600&sort=top&restrict_sr=on&syntax=cloudsearch
 
-testen, ob es auf mobile auch laeuft
+testen, ob es auf mobile auch laeuft und gut aussieht
 
 domain reservieren
 

@@ -19,6 +19,11 @@
   margin: 4px;
 }
 
+#headerSuffix {
+  font-size: 70%;
+  color: DarkGray;
+}
+
 .icon {
   width: 32px;
   height: 32px;
