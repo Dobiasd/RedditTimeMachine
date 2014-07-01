@@ -28,5 +28,3 @@ https://github.com/elm-lang/Elm/issues/652
 click auf eine suggestion muss den richtigen wert setzen (wenn nicht geht, normalen button verwenden, der hat aber leider nix fettgedrucktes)
 https://groups.google.com/forum/#!topic/elm-discuss/V7frjla1ZoE
 https://github.com/elm-lang/Elm/issues/668
-
-Auch wenn man noch nix eingegeben hat muessen die suggestions clickbar sein.

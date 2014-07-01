@@ -1,6 +1,6 @@
 module Skeleton where
 
-import Layout(defaultSpacer, pageWidth, bgColor, toDefText, toSizedText, showPage, divider)
+import Layout(defaultSpacer, pageWidth, bgColor, toDefText, toSizedText, showPage)
 import Footer(footer)
 import Header(header)
 
@@ -10,10 +10,13 @@ showPage w content =
     headerElem = header w
     footerElem = footer w
     h = heightOf headerElem + heightOf content + heightOf footerElem + 6
+    divider = flow down [ spacer 1 4 |> color bgColor
+                        , spacer w 3 |> color lightOrange ]
+                        |> container w 7 midTop
   in
     flow down [
       headerElem
     , content
-    , divider |> container w (heightOf divider) midTop
+    , divider
     , footerElem
     ] |> color bgColor |> container w h midTop

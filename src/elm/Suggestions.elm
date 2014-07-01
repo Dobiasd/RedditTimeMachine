@@ -65,11 +65,20 @@ showSuggestion query s =
     idxs = if emptyQuery then [] else String.indexes query s
   in
     if emptyQuery || isEmpty idxs
-      then showSuggPart id black s
+      then suggButton (showSuggPart id black s) s
       else showSuggestionNonEmptyQuery query s (head idxs)
 
 showSuggPart : (Text -> Text) -> Color -> String -> Element
 showSuggPart f col = centered . f . Text.color col . Text.height 14 . toText
+
+suggButton : Element -> String -> Element
+suggButton elem s =
+  let
+    elemHover = elem |> color lightBlue
+    elemClick = elem |> color lightGreen
+  in
+    customButton suggestionClick.handle s elem elemHover elemClick
+    --button suggestionClick.handle s s
 
 showSuggestionNonEmptyQuery : String -> String -> Int -> Element
 showSuggestionNonEmptyQuery query s idx =
@@ -84,11 +93,7 @@ showSuggestionNonEmptyQuery query s idx =
     elem = flow right [ showSuggPart id black s1
                       , showSuggPart bold black s2
                       , showSuggPart id black s3]
-    elemHover = elem |> color lightBlue
-    elemClick = elem |> color lightGreen
-  in
-    customButton suggestionClick.handle s elem elemHover elemClick
-    --button suggestionClick.handle s s
+  in suggButton elem s
 
 suggestionClick : Input String
 suggestionClick = input ""
