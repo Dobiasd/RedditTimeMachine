@@ -9,6 +9,20 @@
 }
 
 #header {
+  width: 100%;
+  background: #729fcf;
+  text-align: right;
+}
+
+#logo {
+  text-align: center;
+  margin: 4px;
+}
+
+.icon {
+  width: 32px;
+  height: 32px;
+  margin: 4px;
 }
 
 #query {

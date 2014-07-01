@@ -8,8 +8,6 @@ import Text
 import String
 import Window
 
-import Debug
-
 import Layout(defaultSpacer, pageWidth, bgColor)
 
 import Suggestions(genSuggestions, showSuggestion, sfwCheck, nsfwCheck, maxSuggestions, overflowIndicator, Subreddits, subreddits, suggestionClick)
@@ -18,6 +16,9 @@ import Suggestions(genSuggestions, showSuggestion, sfwCheck, nsfwCheck, maxSugge
 -- if the generation of suggestions is too slow for the typing speed,
 -- the edit box is provided by the containing html page.
 -- https://groups.google.com/forum/#!topic/elm-discuss/Lm-M-PPM2zQ
+--
+-- Additionally there is no possibility to set the initial keyboard focus.
+-- https://groups.google.com/forum/#!topic/elm-discuss/d6B3D6suJNw
 port query : Signal String
 
 port selected : Signal String
@@ -148,11 +149,13 @@ showResult rawName criterion interval amount now =
     end = today - 1000*3600*24*9
     url = genLink name criterion start end
     timeRangeStr = showTimeRange (start, end)
+    divider = spacer pageWidth 3 |> color lightOrange
   in
-    flow down [
-      spacer pageWidth 2 |> color lightOrange
+    [
+      divider  
     , Text.link url (toText ("/r/" ++ name ++ " " ++ timeRangeStr)) |> centered
-    ]
+    , divider
+    ] |> intersperse defaultSpacer |> flow down
 
 scene : Int -> Bool -> Bool -> Subreddits -> String -> Criterion -> Interval -> Int -> Time -> Element
 scene w sfwOn nsfwOn names query criterion interval amount now =
@@ -167,7 +170,7 @@ scene w sfwOn nsfwOn names query criterion interval amount now =
            , flow right [ plainText "amount:"    |> labelSizeF, amountDropDown ]
            , spacer 10 60
            ]
-    inputElem = intersperse (defaultSpacer) rows |> flow down
+    inputElem = intersperse defaultSpacer rows |> flow down
     bodyContent = flow down [
                     flow right [ inputElem, defaultSpacer, defaultSpacer, suggestionsElem ]
                   , showResult query criterion interval amount now
@@ -182,7 +185,5 @@ scene w sfwOn nsfwOn names query criterion interval amount now =
 
     body = container pageWidth (heightOf bodyContent) midLeft bodyContent |> container w (heightOf bodyContent) midTop
     page = body |> color bgColor
-
-    asd = Debug.log "main w" w
   in
     page |> container w (heightOf page) midTop

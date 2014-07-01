@@ -25,9 +25,6 @@ Die ist dann soviele spalten breit, wie ins fenster passen
 dates constructen ueber funktion, die intern mit fromString arbeitet
 intervall-ende ist dann nächste Tag minus eine sekunde
 
-focus direkt aufs eingabefeld
-https://groups.google.com/forum/#!topic/elm-discuss/d6B3D6suJNw
-
 in module aufteilen
 
 rollover ueber die suggestions soll nicht haengen bleiben (ganz raus? Dann aber anders als link kennzeichnen. hand mouse cursor?)
@@ -36,10 +33,6 @@ https://github.com/elm-lang/Elm/issues/652
 click auf eine suggestion muss den richtigen wert setzen (wenn nicht geht, normalen button verwenden, der hat aber leider nix fettgedrucktes)
 https://groups.google.com/forum/#!topic/elm-discuss/V7frjla1ZoE
 https://github.com/elm-lang/Elm/issues/668
-
-die share-links nicht mehr als custombutton sondern als image machen
-https://groups.google.com/forum/#!topic/elm-discuss/K5tHTGDbLLk
-https://github.com/elm-lang/Elm/pull/669
 
 Beide Elm-Module muessen visuell auf Aenderung der Fenstergroesse reagieren.
 https://groups.google.com/forum/#!topic/elm-discuss/aFn6A0wOKc8

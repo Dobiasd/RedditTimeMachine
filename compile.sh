@@ -4,20 +4,19 @@
 #rm -r cache
 
 elm -m -o --src-dir=./src/elm --set-runtime=elm-runtime.js src/elm/RedditTimeMachine.elm
-elm -m -o --src-dir=./src/elm --set-runtime=elm-runtime.js src/elm/Header.elm
 
 cp -r ./src/icons ./build
 cp -r ./src/imgs ./build
 
-mkdir ./build/js
+mkdir -p ./build/js
 
 cp $HOME/.cabal/share/Elm-0.12.3/elm-runtime.js ./build/js
 
 for pathname in ./build/src/elm/*.js
 do
     filename="${pathname##*/}"
-    #uglifyjs "$pathname" > "./build/js/$filename"
-    cp "$pathname" "./build/js/$filename"
+    uglifyjs "$pathname" > "./build/js/$filename"
+    #cp "$pathname" "./build/js/$filename"
 done
 
 cp ./src/index.html ./build/index.html

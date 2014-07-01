@@ -5,14 +5,22 @@
     <meta name="keywords" content="Reddit,Time,Machine,search,subreddits,day,week,month,year,sort,hot,top,comments,relevance">
     <title>Reddit Time Machine - check out what was up on reddit days/weeks/months ago</title>
     <script type="text/javascript" src="js/elm-runtime.js"></script>
-    <script type="text/javascript" src="js/Header.js"></script>
     <script type="text/javascript" src="js/RedditTimeMachine.js"></script>
     <link rel="stylesheet" type="text/css" href="style.css" media="screen">
   </head>
   <body onload="Init()">
     <div id="ads">ads</div>
-    <div id="header"></div>
-    <div id="query"><input type="text" id="queryField" placeholder="enter subreddit"></div>
+    <div id="header">
+      <a href="https://www.facebook.com/sharer/sharer.php?u=http://www.reddittimemachine.com"><img src="icons/facebook.png" class="icon"/></a>
+      <a href="https://twitter.com/home?status=Check%20out%20what%20was%20hot%20on%20reddit%20days/weeks/months%20ago%20at%20http://www.reddittimemachine.com"><img src="icons/twitter.png" class="icon"/></a>
+      <a href="https://plus.google.com/share?url=http://www.reddittimemachine.com"><img src="icons/googleplus.png" class="icon"/></a>
+      <a href="https://www.linkedin.com/shareArticle?mini=true&url=http://www.reddittimemachine.com&title=Reddit%20Time%20Machine&summary=Check%20out%20what%20was%20hot%20on%20reddit%20days/weeks/months%20ago.&source="><img src="icons/linkedin.png" class="icon"/></a>
+      <a href="https://pinterest.com/pin/create/button/?url=&media=http://www.reddittimemachine.com&description=Check%20out%20what%20was%20hot%20on%20reddit%20days/weeks/months%20ago." ]><img src="icons/pinterest.png" class="icon"/></a>
+    </div>
+    <div id="logo"><p>Reddit Time Machine</p>
+      <img src="imgs/snoo.png" />
+    </div>
+    <div id="query"><input type="text" id="queryField" placeholder="enter subreddit" autofocus></div>
     <div id="main"></div>
     <noscript>Your Browser must support Javascript to display this page.</noscript>
   </body>
@@ -20,15 +28,9 @@
     function Init() {
       lastQuery = "";
       document.getElementById("queryField").value = "";
-
-      var headerDiv = document.getElementById('header');
       var mainDiv = document.getElementById('main');
-
-      header = Elm.embed(Elm.Header, headerDiv);      
       page = Elm.embed(Elm.RedditTimeMachine, mainDiv, {query:""});
-
       page.ports.selected.subscribe(Selected);
-
       setInterval(CheckQuery, 100);
     }
     function CheckQuery() {
