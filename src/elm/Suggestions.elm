@@ -63,9 +63,15 @@ showSuggestion query s =
   let
     emptyQuery = String.isEmpty query
     idxs = if emptyQuery then [] else String.indexes query s
+    -- Elm makes JS say "TypeError: node.parentNode is null"
+    -- when the customButtons made of right flows
+    -- have different amounts of elements here.
+    -- This was not yet reproduced in a minimal example.
+    -- test: http://www.share-elm.com/sprout/53b327d0e4b07afa6f982745
+    dummy = spacer 0 0 |> color white
   in
     if emptyQuery || isEmpty idxs
-      then suggButton (showSuggPart id black s) s
+      then suggButton (flow right [showSuggPart id black s, dummy, dummy]) s
       else showSuggestionNonEmptyQuery query s (head idxs)
 
 showSuggPart : (Text -> Text) -> Color -> String -> Element
