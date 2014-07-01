@@ -20,6 +20,7 @@ do
 done
 
 cp ./src/index.html ./build/index.html
-cp ./src/style.css ./build/style.css
+uglifyjs ./src/main.js > ./build/js/main.js
+yui-compressor ./src/style.css > ./build/style.css
 
 rm -r ./build/src
