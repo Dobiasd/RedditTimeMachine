@@ -17,3 +17,7 @@ toSizedText s = leftAligned . Text.color black . Text.height s . toText
 
 toDefText : String -> Element
 toDefText = toSizedText 20
+
+divider : Element
+divider = flow down [ spacer 1 4 |> color bgColor
+                    , spacer pageWidth 3 |> color lightOrange ]

@@ -1,6 +1,6 @@
 module RedditTimeMachine where
 
-import Graphics.Input (Input, input, dropDown, checkbox, customButton)
+import Graphics.Input (Input, input, dropDown, checkbox)
 import Graphics.Input
 import Graphics.Input.Field as Field
 import Date
@@ -9,22 +9,32 @@ import String
 import Window
 
 import Layout(defaultSpacer, pageWidth, bgColor, toDefText, toSizedText)
+import Skeleton(showPage)
 
-import Header(header)
+import About(about)
 
 import Suggestions(genSuggestions, showSuggestion, sfwCheck, nsfwCheck, maxSuggestions, overflowIndicator, Subreddits, subreddits, suggestionClick)
+
+import Footer(currentPage, MainPage, AboutPage, Page)
 
 -- To keep the query text input from swallowing characters
 -- if the generation of suggestions is too slow for the typing speed,
 -- the edit box is provided by the containing html page.
 -- https://groups.google.com/forum/#!topic/elm-discuss/Lm-M-PPM2zQ
 --
--- Additionally there is no possibility to set the initial keyboard focus.
+-- And there is no possibility to set the initial keyboard focus in elm.
 -- https://groups.google.com/forum/#!topic/elm-discuss/d6B3D6suJNw
+--
+-- And the elm generated input field works badly in Android browser
+-- because after redrawing the text is selected and thus you would
+-- overwrite every character with the next one with normal typing.
 port query : Signal String
 
 port selected : Signal String
 port selected = suggestionClick.signal
+
+port showQuery : Signal Bool
+port showQuery = (\x -> x == MainPage) <~ currentPage
 
 data Criterion = Relevance | Hot | Top | Comments
 data Interval = Days | Weeks | Months | Years
@@ -122,6 +132,7 @@ main = scene <~ (dropRepeats Window.width)
               ~ interval.signal
               ~ amount.signal
               ~ now
+              ~ currentPage
 
 genLink : String -> Criterion -> Time -> Time -> String
 genLink name criterion start end =
@@ -151,15 +162,19 @@ showResult rawName criterion interval amount now =
     end = today - 1000*3600*24*9
     url = genLink name criterion start end
     timeRangeStr = showTimeRange (start, end)
-    divider = spacer pageWidth 3 |> color lightOrange
   in
-    [ divider
+    [ spacer pageWidth 1 |> color lightOrange
     , Text.link url (toText ("/r/" ++ name ++ " " ++ timeRangeStr)) |> centered
-    , divider
     ] |> intersperse defaultSpacer |> flow down
 
-scene : Int -> Bool -> Bool -> Subreddits -> String -> Criterion -> Interval -> Int -> Time -> Element
-scene w sfwOn nsfwOn names query criterion interval amount now =
+scene : Int -> Bool -> Bool -> Subreddits -> String -> Criterion -> Interval -> Int -> Time -> Page -> Element
+scene w sfwOn nsfwOn names query criterion interval amount now page =
+  case page of
+    MainPage -> mainPage w sfwOn nsfwOn names query criterion interval amount now
+    AboutPage -> about w
+
+mainPage : Int -> Bool -> Bool -> Subreddits -> String -> Criterion -> Interval -> Int -> Time -> Element
+mainPage w sfwOn nsfwOn names query criterion interval amount now =
   let
     labelSizeF = width 120
     rows = [ spacer 0 0 |> color bgColor
@@ -187,12 +202,12 @@ scene w sfwOn nsfwOn names query criterion interval amount now =
     bodyLeft = flow down [
                  spacer 1 30 |> color bgColor -- room for text input field
                , body ]
-    page = flow down [
-             header w
-           , flow right [
-               bodyLeft
-             , suggestionsElem ] |> container w (heightOf bodyLeft) midTop
-           , resultElem |> container w (heightOf bodyLeft) midTop
-           ] |> color bgColor
+
+    contentRaw = flow down [
+                   flow right [
+                     bodyLeft
+                   , suggestionsElem ] |> container w (heightOf bodyLeft) midTop
+                 , resultElem |> container w (heightOf resultElem) midTop ]
+    content = contentRaw |> container w (heightOf contentRaw) midTop
   in
-    page |> container w (heightOf page) midTop
+    showPage w content
