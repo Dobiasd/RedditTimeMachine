@@ -20,26 +20,28 @@
          - There is no known way to use AdSense inside elm.
            (https://groups.google.com/forum/#!topic/elm-discuss/hixIOJGNrf8)
     -->
-    <div id="header">
-      <a href="https://www.facebook.com/sharer/sharer.php?u=http://www.reddittimemachine.com"><img src="icons/facebook.png" class="icon"/></a>
-      <a href="https://twitter.com/home?status=Check%20out%20what%20was%20hot%20on%20reddit%20days/weeks/months%20ago%20at%20http://www.reddittimemachine.com"><img src="icons/twitter.png" class="icon"/></a>
-      <a href="https://plus.google.com/share?url=http://www.reddittimemachine.com"><img src="icons/googleplus.png" class="icon"/></a>
-      <a href="https://www.linkedin.com/shareArticle?mini=true&url=http://www.reddittimemachine.com&title=Reddit%20Time%20Machine&summary=Check%20out%20what%20was%20hot%20on%20reddit%20days/weeks/months%20ago.&source="><img src="icons/linkedin.png" class="icon"/></a>
-      <a href="https://pinterest.com/pin/create/button/?url=&media=http://www.reddittimemachine.com&description=Check%20out%20what%20was%20hot%20on%20reddit%20days/weeks/months%20ago." ]><img src="icons/pinterest.png" class="icon"/></a>
-    </div>
-    <div id="logo"><p>Reddit Time Machine<span id="headerSuffix">.com</span></p>
-      <img src="imgs/snoo.png" />
-    </div>
-    <div id="query"><input type="text" id="queryField" placeholder="enter subreddit" autofocus></div>
+    <div id="query"></div>
     <div id="main"></div>
     <noscript>Your Browser must support Javascript to display this page.</noscript>
   </body>
   <script type="text/javascript">
     function Init() {
       lastQuery = "";
-      document.getElementById("queryField").value = "";
+      //document.getElementById("queryField").value = "";
       var mainDiv = document.getElementById('main');
       page = Elm.embed(Elm.RedditTimeMachine, mainDiv, {query:""});
+
+      var input = document.createElement("input");
+      input.type = "text";
+      input.className = "css-class-name"; // set the CSS class
+      var queryDiv = document.getElementById('query');
+      input.placeholder = "enter subreddit"
+      input.id = "queryField";
+      queryDiv.appendChild(input); // put it into the DOM
+      input.focus();
+
+      //<div id="query"><input type="text" id="queryField" placeholder="enter subreddit" autofocus></div>
+
       page.ports.selected.subscribe(Selected);
       setInterval(CheckQuery, 100);
     }

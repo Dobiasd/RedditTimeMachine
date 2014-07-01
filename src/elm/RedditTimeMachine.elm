@@ -10,6 +10,8 @@ import Window
 
 import Layout(defaultSpacer, pageWidth, bgColor)
 
+import Header(header)
+
 import Suggestions(genSuggestions, showSuggestion, sfwCheck, nsfwCheck, maxSuggestions, overflowIndicator, Subreddits, subreddits, suggestionClick)
 
 -- To keep the query text input from swallowing characters
@@ -152,7 +154,7 @@ showResult rawName criterion interval amount now =
     divider = spacer pageWidth 3 |> color lightOrange
   in
     [
-      divider  
+      divider
     , Text.link url (toText ("/r/" ++ name ++ " " ++ timeRangeStr)) |> centered
     , divider
     ] |> intersperse defaultSpacer |> flow down
@@ -184,6 +186,8 @@ scene w sfwOn nsfwOn names query criterion interval amount now =
         |> flow down
 
     body = container pageWidth (heightOf bodyContent) midLeft bodyContent |> container w (heightOf bodyContent) midTop
-    page = body |> color bgColor
+    page = [ header w
+           , spacer 1 30 |> color bgColor -- room for text input field
+           , body ] |> flow down |> color bgColor
   in
     page |> container w (heightOf page) midTop

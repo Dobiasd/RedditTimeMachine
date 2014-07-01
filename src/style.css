@@ -8,29 +8,8 @@
   margin-right: auto;
 }
 
-#header {
-  width: 100%;
-  background: #729fcf;
-  text-align: right;
-}
-
-#logo {
-  text-align: center;
-  margin: 4px;
-}
-
-#headerSuffix {
-  font-size: 70%;
-  color: DarkGray;
-}
-
-.icon {
-  width: 32px;
-  height: 32px;
-  margin: 4px;
-}
-
 #query {
+  top: 100px;
   width: 200px;
   display: block;
   margin-left: auto;
@@ -38,6 +17,12 @@
 }
 
 #queryField {
+  /* http://stackoverflow.com/questions/5967758 */
+  position:    absolute;
+  top:         290px;
+  left:        50%;    /* move the left edge to the center */
+  margin-left: -200px; /* and move it to the left half the box’ width. */
+  z-index:     9999;   /* Try to get it on top. */
   width: 200px;
 }
 
