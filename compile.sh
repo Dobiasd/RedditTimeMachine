@@ -10,7 +10,7 @@ cp -r ./src/imgs ./build
 
 mkdir -p ./build/js
 
-cp $HOME/.cabal/share/Elm-0.12.3/elm-runtime.js ./build/js
+uglifyjs $HOME/.cabal/share/Elm-0.12.3/elm-runtime.js > ./build/js/elm-runtime.js
 
 for pathname in ./build/src/elm/*.js
 do
