@@ -9,7 +9,7 @@ showPage w content =
   let
     headerElem = header w
     footerElem = footer w
-    h = heightOf headerElem + heightOf content + heightOf footerElem
+    h = heightOf headerElem + heightOf content + heightOf footerElem + 6
   in
     flow down [
       headerElem
