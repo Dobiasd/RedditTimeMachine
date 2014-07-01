@@ -10,6 +10,16 @@
   </head>
   <body onload="Init()">
     <div id="ads">ads</div>
+    <!-- The header is not implemented in elm but here fot the following reasons:
+         - Multiple elm modules at the same time produce
+           problems scaling with the browser size
+           (https://groups.google.com/forum/#!topic/elm-discuss/aFn6A0wOKc8)
+         - Currently (2014-07-01) images only can be used as hyperlinks
+           with a workaround
+           (https://groups.google.com/forum/#!topic/elm-discuss/K5tHTGDbLLk)
+         - There is no known way to use AdSense inside elm.
+           (https://groups.google.com/forum/#!topic/elm-discuss/hixIOJGNrf8)
+    -->
     <div id="header">
       <a href="https://www.facebook.com/sharer/sharer.php?u=http://www.reddittimemachine.com"><img src="icons/facebook.png" class="icon"/></a>
       <a href="https://twitter.com/home?status=Check%20out%20what%20was%20hot%20on%20reddit%20days/weeks/months%20ago%20at%20http://www.reddittimemachine.com"><img src="icons/twitter.png" class="icon"/></a>
