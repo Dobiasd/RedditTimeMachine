@@ -3,7 +3,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <meta name="keywords" content="Reddit,Time,Machine,search,subreddits,day,week,month,year,sort,hot,top,comments,relevance">
-    <title>todo.</title>
+    <title>Reddit Time Machine - check out what was up on reddit days/weeks/months ago</title>
     <script type="text/javascript" src="js/elm-runtime.js"></script>
     <script type="text/javascript" src="js/Header.js"></script>
     <script type="text/javascript" src="js/RedditTimeMachine.js"></script>
@@ -14,6 +14,7 @@
     <div id="header"></div>
     <div id="query"><input type="text" id="queryField" placeholder="enter subreddit"></div>
     <div id="main"></div>
+    <noscript>Your Browser must support Javascript to display this page.</noscript>
   </body>
   <script type="text/javascript">
     function Init() {
@@ -21,9 +22,9 @@
       document.getElementById("queryField").value = "";
 
       var headerDiv = document.getElementById('header');
-      header = Elm.embed(Elm.Header, headerDiv);
-
       var mainDiv = document.getElementById('main');
+
+      header = Elm.embed(Elm.Header, headerDiv);      
       page = Elm.embed(Elm.RedditTimeMachine, mainDiv, {query:""});
 
       page.ports.selected.subscribe(Selected);
@@ -35,10 +36,20 @@
       if (query != lastQuery) {
         lastQuery = query;
         page.ports.query.send(query);
+        SetTitle(query);
       }
     }
     function Selected(name) {
       document.getElementById("queryField").value = name;
+      SetTitle(name);
+    }
+    function SetTitle(name) {
+      subreddit = "reddit";
+      if (name) {
+        subreddit = "/r/" + name;
+      }
+      title = "Reddit Time Machine - check out what was up on + " + subreddit + " days/weeks/months ago";
+      document.title = title;
     }
   </script>
 </html>

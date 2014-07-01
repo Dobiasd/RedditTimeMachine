@@ -3,6 +3,8 @@ module Header where
 import Graphics.Input(Input, input, customButton)
 import Window
 
+import Debug
+
 import Layout(defaultSpacer, bgColor)
 
 iconSize : Int
@@ -15,7 +17,7 @@ logoWidth : Int
 logoWidth = 120
 
 main : Signal Element
-main = scene <~ Window.dimensions
+main = scene <~ (dropRepeats Window.width)
 
 clicks : Input ()
 clicks = input ()
@@ -39,22 +41,21 @@ logo = image logoWidth logoHeight "imgs/snoo.png"
 topBar : Int -> Element
 topBar w =
   flow down [ defaultSpacer
-            , flow right [ shareIcons, defaultSpacer ] |> container w (heightOf shareIcons) topRight
+            , flow right [ shareIcons, defaultSpacer ]
+              |> container w (heightOf shareIcons) topRight
             , defaultSpacer ] |> color lightBlue
 
-header : Int -> Element
-header w =
+scene : Int -> Element
+scene w =
   let
     title = flow right [
       toText "reddit time machine" |> centered . Text.color black . Text.height 24
     , toText " .com" |> centered . Text.color darkGray . Text.height 16
     ]
+    asd = Debug.log "header w" w
   in
     flow down [
       topBar w
     , title |> container w (heightOf title) midTop
     , logo |> container w (heightOf logo) midTop
-    , defaultSpacer ]
-
-scene : (Int, Int) -> Element
-scene (w,h) = header w |> color bgColor
+    , defaultSpacer ] |> color bgColor

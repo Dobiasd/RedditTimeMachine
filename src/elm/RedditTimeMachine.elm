@@ -8,27 +8,23 @@ import Text
 import String
 import Window
 
+import Debug
+
 import Layout(defaultSpacer, pageWidth, bgColor)
 
 import Suggestions(genSuggestions, showSuggestion, sfwCheck, nsfwCheck, maxSuggestions, overflowIndicator, Subreddits, subreddits, suggestionClick)
 
+-- To keep the query text input from swallowing characters
+-- if the generation of suggestions is too slow for the typing speed,
+-- the edit box is provided by the containing html page.
+-- https://groups.google.com/forum/#!topic/elm-discuss/Lm-M-PPM2zQ
 port query : Signal String
-
-port title : Signal String
-port title = genTitle <~ query
 
 port selected : Signal String
 port selected = suggestionClick.signal
 
 data Criterion = Relevance | Hot | Top | Comments
 data Interval = Days | Weeks | Months | Years
-
-genTitle : String -> String
-genTitle name =
-  let
-    addOn = if String.isEmpty name then "" else " -> " ++ name
-  in
-    "Reddit Time Machine - check out what was hot on reddit days/weeks/months ago" ++ addOn
 
 criterion : Input Criterion
 criterion = input Top
@@ -114,7 +110,7 @@ now : Signal Time
 now = every minute
 
 main : Signal Element
-main = scene <~ Window.dimensions
+main = scene <~ (dropRepeats Window.width)
               ~ sfwCheck.signal
               ~ nsfwCheck.signal
               ~ subreddits
@@ -154,15 +150,16 @@ showResult rawName criterion interval amount now =
     timeRangeStr = showTimeRange (start, end)
   in
     flow down [
-      spacer pageWidth 3 |> color lightOrange
+      spacer pageWidth 2 |> color lightOrange
     , Text.link url (toText ("/r/" ++ name ++ " " ++ timeRangeStr)) |> centered
     ]
 
-scene : (Int, Int) -> Bool -> Bool -> Subreddits -> String -> Criterion -> Interval -> Int -> Time -> Element
-scene (w,h) sfwOn nsfwOn names query criterion interval amount now =
+scene : Int -> Bool -> Bool -> Subreddits -> String -> Criterion -> Interval -> Int -> Time -> Element
+scene w sfwOn nsfwOn names query criterion interval amount now =
   let
     labelSizeF = width 100
-    rows = [ flow right [ plainText "sfw:"       |> labelSizeF, checkbox sfwCheck.handle id sfwOn |> width 23 ]
+    rows = [ spacer 0 0 |> color bgColor
+           , flow right [ plainText "sfw:"       |> labelSizeF, checkbox sfwCheck.handle id sfwOn |> width 23 ]
            , flow right [ plainText "nsfw:"      |> labelSizeF, checkbox nsfwCheck.handle id nsfwOn |> width 23 ]
            , defaultSpacer
            , flow right [ plainText "sorted by:" |> labelSizeF, criterionDropDown ]
@@ -185,5 +182,7 @@ scene (w,h) sfwOn nsfwOn names query criterion interval amount now =
 
     body = container pageWidth (heightOf bodyContent) midLeft bodyContent |> container w (heightOf bodyContent) midTop
     page = body |> color bgColor
+
+    asd = Debug.log "main w" w
   in
     page |> container w (heightOf page) midTop
