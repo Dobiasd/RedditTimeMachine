@@ -8,7 +8,7 @@ import Text
 import String
 import Window
 
-import Layout(defaultSpacer, pageWidth, bgColor)
+import Layout(defaultSpacer, pageWidth, bgColor, toDefText, toSizedText)
 
 import Header(header)
 
@@ -153,8 +153,7 @@ showResult rawName criterion interval amount now =
     timeRangeStr = showTimeRange (start, end)
     divider = spacer pageWidth 3 |> color lightOrange
   in
-    [
-      divider
+    [ divider
     , Text.link url (toText ("/r/" ++ name ++ " " ++ timeRangeStr)) |> centered
     , divider
     ] |> intersperse defaultSpacer |> flow down
@@ -162,32 +161,38 @@ showResult rawName criterion interval amount now =
 scene : Int -> Bool -> Bool -> Subreddits -> String -> Criterion -> Interval -> Int -> Time -> Element
 scene w sfwOn nsfwOn names query criterion interval amount now =
   let
-    labelSizeF = width 100
+    labelSizeF = width 120
     rows = [ spacer 0 0 |> color bgColor
-           , flow right [ plainText "sfw:"       |> labelSizeF, checkbox sfwCheck.handle id sfwOn |> width 23 ]
-           , flow right [ plainText "nsfw:"      |> labelSizeF, checkbox nsfwCheck.handle id nsfwOn |> width 23 ]
+           , flow right [ toDefText "sfw:"       |> labelSizeF, checkbox sfwCheck.handle id sfwOn |> width 23 ]
+           , flow right [ toDefText "nsfw:"      |> labelSizeF, checkbox nsfwCheck.handle id nsfwOn |> width 23 ]
            , defaultSpacer
-           , flow right [ plainText "sorted by:" |> labelSizeF, criterionDropDown ]
-           , flow right [ plainText "interval:"  |> labelSizeF, intervalDropDown ]
-           , flow right [ plainText "amount:"    |> labelSizeF, amountDropDown ]
-           , spacer 10 60
+           , flow right [ toDefText "sorted by:" |> labelSizeF, criterionDropDown ]
+           , flow right [ toDefText "interval:"  |> labelSizeF, intervalDropDown ]
+           , flow right [ toDefText "amount:"    |> labelSizeF, amountDropDown ]
+           , spacer 10 40
            ]
     inputElem = intersperse defaultSpacer rows |> flow down
-    bodyContent = flow down [
-                    flow right [ inputElem, defaultSpacer, defaultSpacer, suggestionsElem ]
-                  , showResult query criterion interval amount now
-                  ]
+    bodyContent = flow right [ inputElem, defaultSpacer, defaultSpacer ]
     suggestions = genSuggestions names query
     suggestionElems = suggestions |> take maxSuggestions |> map (showSuggestion query)
-    suggestionsElem = suggestionElems
+    suggestionsElemRaw = suggestionElems
       ++ (if length suggestions > maxSuggestions
-           then [plainText overflowIndicator]
+           then [toDefText overflowIndicator]
            else [])
         |> flow down
+    suggestionsElem = suggestionsElemRaw |> container 200 (heightOf suggestionsElemRaw) topLeft
 
-    body = container pageWidth (heightOf bodyContent) midLeft bodyContent |> container w (heightOf bodyContent) midTop
-    page = [ header w
-           , spacer 1 30 |> color bgColor -- room for text input field
-           , body ] |> flow down |> color bgColor
+    resultElem = showResult query criterion interval amount now
+    body = bodyContent
+    bodyLeft = flow down [
+                 spacer 1 30 |> color bgColor -- room for text input field
+               , body ]
+    page = flow down [
+             header w
+           , flow right [
+               bodyLeft
+             , suggestionsElem ] |> container w (heightOf bodyLeft) midTop
+           , resultElem |> container w (heightOf bodyLeft) midTop
+           ] |> color bgColor
   in
     page |> container w (heightOf page) midTop

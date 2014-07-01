@@ -9,17 +9,9 @@
     <link rel="stylesheet" type="text/css" href="style.css" media="screen">
   </head>
   <body onload="Init()">
+    <!-- I do not know how to use AdSense inside elm, so it is used here.
+         (https://groups.google.com/forum/#!topic/elm-discuss/hixIOJGNrf8) -->
     <div id="ads">ads</div>
-    <!-- The header is not implemented in elm but here fot the following reasons:
-         - Multiple elm modules at the same time produce
-           problems scaling with the browser size
-           (https://groups.google.com/forum/#!topic/elm-discuss/aFn6A0wOKc8)
-         - Currently (2014-07-01) images only can be used as hyperlinks
-           with a workaround
-           (https://groups.google.com/forum/#!topic/elm-discuss/K5tHTGDbLLk)
-         - There is no known way to use AdSense inside elm.
-           (https://groups.google.com/forum/#!topic/elm-discuss/hixIOJGNrf8)
-    -->
     <div id="query"></div>
     <div id="main"></div>
     <noscript>Your Browser must support Javascript to display this page.</noscript>
@@ -27,21 +19,16 @@
   <script type="text/javascript">
     function Init() {
       lastQuery = "";
-      //document.getElementById("queryField").value = "";
       var mainDiv = document.getElementById('main');
       page = Elm.embed(Elm.RedditTimeMachine, mainDiv, {query:""});
 
       var input = document.createElement("input");
       input.type = "text";
-      input.className = "css-class-name"; // set the CSS class
       var queryDiv = document.getElementById('query');
       input.placeholder = "enter subreddit"
       input.id = "queryField";
-      queryDiv.appendChild(input); // put it into the DOM
+      queryDiv.appendChild(input);
       input.focus();
-
-      //<div id="query"><input type="text" id="queryField" placeholder="enter subreddit" autofocus></div>
-
       page.ports.selected.subscribe(Selected);
       setInterval(CheckQuery, 100);
     }

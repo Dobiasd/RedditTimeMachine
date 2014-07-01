@@ -19,11 +19,12 @@
 #queryField {
   /* http://stackoverflow.com/questions/5967758 */
   position:    absolute;
-  top:         290px;
-  left:        50%;    /* move the left edge to the center */
-  margin-left: -200px; /* and move it to the left half the box’ width. */
+  top:         295px;
+  left:        50%;    /* Move the left edge to the center. */
+  margin-left: -220px; /* And move it a bit to the left again. */
   z-index:     9999;   /* Try to get it on top. */
-  width: 200px;
+  width:       220px;
+  font-size:   18px;
 }
 
 #main {
