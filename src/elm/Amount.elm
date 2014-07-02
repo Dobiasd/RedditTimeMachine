@@ -1,13 +1,12 @@
 module Amount where
 
 import Graphics.Input (Input, input, dropDown)
+import SfwSwitches (toIntDef)
 
-import SfwSwitches(toIntDef)
+type Amount = Int
 
 defaultAmount : Int
 defaultAmount = 10
-
-type Amount = Int
 
 amountInput : Input Amount
 amountInput = input defaultAmount

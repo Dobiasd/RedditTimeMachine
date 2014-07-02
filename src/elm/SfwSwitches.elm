@@ -5,6 +5,8 @@ import Graphics.Input (Input, input)
 import Sfw
 import Nsfw
 
+type Subreddits = [(String, Int)]
+
 toIntDef : Int -> String -> Int
 toIntDef def x = case String.toInt x of
   Just res -> res
@@ -46,6 +48,3 @@ sfw = Sfw.sfwRaw |> parseRawSubreddits |> lowerFst
 
 nsfw : Subreddits
 nsfw = Nsfw.nsfwRaw |> parseRawSubreddits |> lowerFst
-
-type Subreddits = [(String, Int)]
-

@@ -31,6 +31,8 @@ showSuggestion query s =
     -- have different amounts of elements here.
     -- This was not yet reproduced in a minimal example.
     -- test: http://www.share-elm.com/sprout/53b327d0e4b07afa6f982745
+    -- But perhaps it is the same problem as this:
+    -- https://github.com/elm-lang/Elm/issues/671
     dummy = spacer 0 0 |> color white
   in
     if emptyQuery || isEmpty idxs

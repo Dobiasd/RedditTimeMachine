@@ -4,6 +4,7 @@ import Graphics.Input (Input, input, dropDown)
 
 data Criterion = Relevance | Hot | Top | Comments
 
+defaultCriterion : Criterion
 defaultCriterion = Top
 
 criterionInput : Input Criterion

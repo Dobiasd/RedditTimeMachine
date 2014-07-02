@@ -2,11 +2,10 @@ module Interval where
 
 import Graphics.Input (Input, input, dropDown)
 
-import String
-
-defaultInterval = Weeks
-
 data Interval = Days | Weeks | Months | Years
+
+defaultInterval : Interval
+defaultInterval = Weeks
 
 intervalInput : Input Interval
 intervalInput = input defaultInterval

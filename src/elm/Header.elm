@@ -1,9 +1,9 @@
 module Header where
 
-import Graphics.Input(Input, input, customButton)
+import Graphics.Input (Input, input, customButton)
 import Window
 
-import Layout(defaultSpacer, bgColor, toDefText, toSizedText)
+import Layout (defaultSpacer, bgColor, toDefText, toSizedText)
 
 iconSize : Int
 iconSize = 32

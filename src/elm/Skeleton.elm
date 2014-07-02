@@ -1,8 +1,9 @@
 module Skeleton where
 
-import Layout(defaultSpacer, pageWidth, bgColor, toDefText, toSizedText, showPage)
-import Footer(footer)
-import Header(header)
+import Layout (defaultSpacer, pageWidth, bgColor, toDefText, toSizedText
+             , showPage)
+import Footer (footer)
+import Header (header)
 
 showPage : Int -> Element -> Element
 showPage w content =

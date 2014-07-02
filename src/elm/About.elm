@@ -1,6 +1,6 @@
 module About where
 
-import Skeleton(showPage)
+import Skeleton (showPage)
 
 about : Int -> Element
 about w =
@@ -8,7 +8,7 @@ about w =
     content = [markdown|
 # About
 
-This webpage is not associated with the official reddit page.
+This webpage is not associated with the [official reddit page](http://www.reddit.com).
 It just provides an auxiliary tool to extend the user experience.
 
 # Contact

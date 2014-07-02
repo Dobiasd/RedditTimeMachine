@@ -39,7 +39,16 @@ floorTimeToPrec prec t =
 
 showTimeRange : (Time, Time) -> String
 showTimeRange (start, end) =
-  showDate PrecDay (Date.fromTime start) ++ " to " ++ showDate PrecDay (Date.fromTime end)
+  showDate PrecDay (Date.fromTime start) ++ " to "
+    ++ showDate PrecDay (Date.fromTime end)
+
+{-
+calcRanges : Criterion -> Interval -> Int -> Time
+calcRanges rawName criterion interval amount today =
+  let
+    lastDay =
+    nums = [0..amount]
+-}
 
 now : Signal Time
 now = every minute
