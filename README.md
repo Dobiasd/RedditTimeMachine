@@ -20,10 +20,11 @@ Die ist dann soviele spalten breit, wie ins fenster passen
 dates constructen ueber funktion, die intern mit fromString arbeitet
 intervall-ende ist dann nächste Tag minus eine sekunde
 
+code clean up und comments
+
+
 dropDowns muessen von den statischen links auch gesetzt werden
 https://github.com/elm-lang/Elm/issues/670
-
-code clean up
 
 rollover ueber die suggestions soll nicht haengen bleiben (ganz raus? Dann aber anders als link kennzeichnen. hand mouse cursor?)
 https://github.com/elm-lang/Elm/issues/652

@@ -15,7 +15,7 @@ import Suggestions (genSuggestions, showSuggestion, maxSuggestions
                   , overflowIndicator, Subreddits, subreddits, suggestionClick
                   , toIntDef, sfwCheck, nsfwCheck)
 import Footer (currentPage, MainPage, AboutPage, Page)
-import DateTools (floorTimeToPrec, PrecDay, showTimeRange, now)
+import DateTools (ceilTimeToPrec, PrecDay, showTimeRange, now, showDate)
 import Amount (showAmount, amountDropDown, Amount, amount, readAmount
              , amountInput)
 import SfwSwitches (toIntDef, sfwCheck, nsfwCheck, Subreddits, showBool, sfwOn
@@ -137,7 +137,7 @@ showResult : String -> Bool -> Bool -> Criterion -> Interval -> Int -> Time
           -> Element
 showResult rawName sfwOn nsfwOn criterion interval amount now =
   let
-    today = floorTimeToPrec PrecDay now
+    today = ceilTimeToPrec PrecDay now
     name = avoidEmptySubredditName rawName
     start = today - 1000*3600*24*10
     end = today - 1000*3600*24*9
@@ -212,3 +212,4 @@ mainPage w sfwOn nsfwOn names query criterion interval amount now =
     content = contentRaw |> centerHorizontally
   in
     showPage w content
+    --Date.fromTime now |> showDate PrecDay |> asText

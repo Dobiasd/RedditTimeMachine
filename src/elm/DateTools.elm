@@ -2,6 +2,8 @@ module DateTools where
 
 import Date
 
+import Interval(Interval, Days, Weeks, Months, Years)
+
 data DatePrec = PrecDay | PrecMonth | PrecYear
 
 showDate : DatePrec -> Date.Date -> String
@@ -36,6 +38,18 @@ floorTimeToPrec : DatePrec -> Time -> Time
 floorTimeToPrec prec t =
   [Date.read (showDate prec (Date.fromTime t))]
   |> justs |> head |> Date.toTime
+
+-- todo plus one chosen time unit
+ceilTimeToPrec : DatePrec -> Time -> Time
+ceilTimeToPrec prec t = floorTimeToPrec prec t
+
+ceilTimeForInterval : Interval -> Time -> Time
+ceilTimeForInterval interval =
+  case interval of
+    Days -> ceilTimeToPrec PrecDay
+    Weeks -> ceilTimeToPrec PrecDay
+    Months -> ceilTimeToPrec PrecMonth
+    Years -> ceilTimeToPrec PrecYear
 
 showTimeRange : (Time, Time) -> String
 showTimeRange (start, end) =
