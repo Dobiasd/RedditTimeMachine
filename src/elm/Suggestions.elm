@@ -24,6 +24,18 @@ parseRawSubreddits =
 lowerFst : [(String, a)] -> [(String, a)]
 lowerFst = map (\(s, i) -> (String.toLower s, i))
 
+sfwDefault : Bool
+sfwDefault = True
+
+nsfwDefault : Bool
+nsfwDefault = False
+
+sfwCheck : Input Bool
+sfwCheck = input sfwDefault
+
+nsfwCheck : Input Bool
+nsfwCheck = input nsfwDefault
+
 sfw : Subreddits
 sfw = Sfw.sfwRaw |> parseRawSubreddits |> lowerFst
 
@@ -37,12 +49,6 @@ subreddits = (\sfwOn nsfwOn ->
   (if sfwOn then sfw else []) ++
   (if nsfwOn then nsfw else []) |> sortBy snd |> reverse)
   <~ sfwCheck.signal ~ nsfwCheck.signal
-
-sfwCheck : Input Bool
-sfwCheck = input True
-
-nsfwCheck : Input Bool
-nsfwCheck = input False
 
 overflowIndicator : String
 overflowIndicator = "..."

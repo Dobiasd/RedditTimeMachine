@@ -20,8 +20,8 @@ Die ist dann soviele spalten breit, wie ins fenster passen
 dates constructen ueber funktion, die intern mit fromString arbeitet
 intervall-ende ist dann nächste Tag minus eine sekunde
 
-statischen link zum einer rtm-page generieren und sharen koennen
-die dann natuerlich beim aufruf parsen
+dropDowns muessen von den statischen links auch gesetzt werden
+https://github.com/elm-lang/Elm/issues/670
 
 code clean up
 

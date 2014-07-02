@@ -8,12 +8,14 @@ import Text
 import String
 import Window
 
+import Debug
+
 import Layout(defaultSpacer, pageWidth, bgColor, toDefText, toSizedText)
 import Skeleton(showPage)
 
 import About(about)
 
-import Suggestions(genSuggestions, showSuggestion, sfwCheck, nsfwCheck, maxSuggestions, overflowIndicator, Subreddits, subreddits, suggestionClick)
+import Suggestions(genSuggestions, showSuggestion, maxSuggestions, overflowIndicator, Subreddits, subreddits, suggestionClick, toIntDef, sfwCheck, nsfwCheck, sfwDefault, nsfwDefault)
 
 import Footer(currentPage, MainPage, AboutPage, Page)
 
@@ -30,6 +32,27 @@ import Footer(currentPage, MainPage, AboutPage, Page)
 -- overwrite every character with the next one with normal typing.
 port query : Signal String
 
+-- for static links with paramters in URL
+port sfwInStr : Signal String
+port nsfwInStr : Signal String
+port sortedByInStr : Signal String
+port intervalInStr : Signal String
+port amountInStr : Signal String
+
+readBoolDef : Bool -> String -> Bool
+readBoolDef def s = if | s == "false" -> False
+                       | s == "true" -> True
+                       | otherwise -> def
+
+showBool : Bool -> String
+showBool b = if b then "true" else "false"
+
+sfwOn : Signal Bool
+sfwOn = merge (readBoolDef sfwDefault <~ sfwInStr) sfwCheck.signal
+
+nsfwOn : Signal Bool
+nsfwOn = merge (readBoolDef nsfwDefault <~ nsfwInStr) nsfwCheck.signal
+
 port selected : Signal String
 port selected = suggestionClick.signal
 
@@ -39,11 +62,31 @@ port showQuery = (\x -> x == MainPage) <~ currentPage
 data Criterion = Relevance | Hot | Top | Comments
 data Interval = Days | Weeks | Months | Years
 
-criterion : Input Criterion
-criterion = input Top
+defaultCriterion = Top
+defaultInterval = Weeks
 
-criterionStr : Criterion -> String
-criterionStr c =
+criterionInput : Input Criterion
+criterionInput = input defaultCriterion
+
+criterion : Signal Criterion
+criterion = merge (readCriterion <~ sortedByInStr) criterionInput.signal
+
+interval : Signal Interval
+interval = merge (readInterval <~ intervalInStr) intervalInput.signal
+
+amount : Signal Amount
+amount = merge (readAmount <~ amountInStr) amountInput.signal
+
+readCriterion : String -> Criterion
+readCriterion s =
+    if | s == "relevance" -> Relevance
+       | s == "hot" -> Hot
+       | s == "top" -> Top
+       | s == "comments" -> Comments
+       | otherwise -> defaultCriterion
+
+showCriterion : Criterion -> String
+showCriterion c =
   case c of
     Relevance -> "relevance"
     Hot -> "hot"
@@ -53,32 +96,55 @@ criterionStr c =
 criterionDropDown : Element
 criterionDropDown =
   let
-    f c = (criterionStr c, c)
+    f c = (showCriterion c, c)
   in
-    dropDown criterion.handle <| map f [Top, Hot, Comments, Relevance]
+    dropDown criterionInput.handle <| map f [Top, Hot, Comments, Relevance]
 
-interval : Input Interval
-interval = input Weeks
+intervalInput : Input Interval
+intervalInput = input defaultInterval
+
+readInterval : String -> Interval
+readInterval s = if | s == "days" -> Days
+                    | s == "weeks" -> Weeks
+                    | s == "months" -> Months
+                    | s == "years" -> Years
+                    | otherwise -> defaultInterval
+
+showInterval : Interval -> String
+showInterval c =
+  case c of
+    Days -> "days"
+    Weeks -> "weeks"
+    Months -> "months"
+    Years -> "years"
 
 intervalDropDown : Element
 intervalDropDown =
-    dropDown interval.handle
-      [ ("days"  , Days)
-      , ("weeks" , Weeks)
-      , ("months", Months)
-      , ("years" , Years)
-      ]
+  let
+    f c = (showInterval c, c)
+  in
+    dropDown intervalInput.handle <| map f [Days, Weeks, Months, Years]
 
-amount : Input Int
-amount = input 10
+defaultAmount : Int
+defaultAmount = 10
+
+type Amount = Int
+
+amountInput : Input Amount
+amountInput = input defaultAmount
+
+readAmount : String -> Amount
+readAmount = toIntDef defaultAmount
+
+showAmount : Amount -> String
+showAmount = show
 
 amountDropDown : Element
 amountDropDown =
-    let
-      asPair i = (show i, i)
-      nums = [10, 20, 50, 100, 200, 500, 1000]
-    in
-      dropDown amount.handle <| map asPair nums
+  let
+    f c = (showAmount c, c)
+  in
+    dropDown amountInput.handle <| map f [10, 20, 50, 100, 200, 500, 1000]
 
 data DatePrec = PrecDay | PrecMonth | PrecYear
 
@@ -124,19 +190,19 @@ now = every minute
 
 main : Signal Element
 main = scene <~ (dropRepeats Window.width)
-              ~ sfwCheck.signal
-              ~ nsfwCheck.signal
+              ~ sfwOn 
+              ~ nsfwOn
               ~ subreddits
               ~ merge (String.toLower <~ query) suggestionClick.signal
-              ~ criterion.signal
-              ~ interval.signal
-              ~ amount.signal
+              ~ criterion
+              ~ interval
+              ~ amount
               ~ now
               ~ currentPage
 
 genLink : String -> Criterion -> Time -> Time -> String
 genLink name criterion start end =
-  "http://www.reddit.com/r/" ++ name ++ "/search?q=timestamp:" ++ show (start/1000) ++ ".." ++ show (end/1000) ++ "&sort=" ++ criterionStr criterion ++ "&restrict_sr=on&syntax=cloudsearch"
+  "http://www.reddit.com/r/" ++ name ++ "/search?q=timestamp:" ++ show (start/1000) ++ ".." ++ show (end/1000) ++ "&sort=" ++ showCriterion criterion ++ "&restrict_sr=on&syntax=cloudsearch"
 
 intervalInMs : Interval -> Time
 intervalInMs i =
@@ -153,11 +219,40 @@ calcRanges rawName criterion interval amount today =
     nums = [0..amount]
 -}
 
-showResult : String -> Criterion -> Interval -> Int -> Time -> Element
-showResult rawName criterion interval amount now =
+genStaticLink : String -> Bool -> Bool -> Criterion -> Interval -> Int -> String
+genStaticLink subreddit sfwOn nsfwOn criterion interval amount =
+  let
+    base = "http://www.reddittimemachine.com/index.html"
+    subredditOption = "?subreddit=" ++ subreddit
+    sfwOption = "&sfw=" ++ showBool sfwOn
+    nsfwOption = "&nsfw=" ++ showBool nsfwOn
+    sortedByOption = "&sortedby=" ++ showCriterion criterion
+    intervalOption = "&interval=" ++ showInterval interval
+    amountOption = "&amount=" ++ showAmount amount
+  in
+    base ++ subredditOption ++ sfwOption ++ nsfwOption ++
+            sortedByOption ++ intervalOption ++ amountOption
+
+avoidEmptySubredditName : String -> String
+avoidEmptySubredditName s = if String.isEmpty s then "all" else s
+
+showStaticLink : String -> Bool -> Bool -> Criterion -> Interval -> Int -> Element
+showStaticLink subredditRaw sfwOn nsfwOn criterion interval amount =
+  let
+    subreddit = avoidEmptySubredditName subredditRaw
+    url = genStaticLink subreddit sfwOn nsfwOn criterion interval amount
+  in
+    flow down [ toDefText "static link to this list:"
+                 -- using link here results in:
+                 -- "TypeError: e.lastNode is undefined"
+               , toDefText url -- |> link url
+               ]
+
+showResult : String -> Bool -> Bool -> Criterion -> Interval -> Int -> Time -> Element
+showResult rawName sfwOn nsfwOn criterion interval amount now =
   let
     today = floorTimeToPrec PrecDay now
-    name = if String.isEmpty rawName then "all" else rawName
+    name = avoidEmptySubredditName rawName
     start = today - 1000*3600*24*10
     end = today - 1000*3600*24*9
     url = genLink name criterion start end
@@ -197,17 +292,20 @@ mainPage w sfwOn nsfwOn names query criterion interval amount now =
         |> flow down
     suggestionsElem = suggestionsElemRaw |> container 200 (heightOf suggestionsElemRaw) topLeft
 
-    resultElem = showResult query criterion interval amount now
+    resultElem = showResult query sfwOn nsfwOn criterion interval amount now
+    staticLinkElem = showStaticLink query sfwOn nsfwOn criterion interval amount
     body = bodyContent
     bodyLeft = flow down [
                  spacer 1 30 |> color bgColor -- room for text input field
                , body ]
-
+    centerHorizontally : Element -> Element
+    centerHorizontally elem = container w (heightOf elem) midTop elem
     contentRaw = flow down [
                    flow right [
                      bodyLeft
-                   , suggestionsElem ] |> container w (heightOf bodyLeft) midTop
-                 , resultElem |> container w (heightOf resultElem) midTop ]
-    content = contentRaw |> container w (heightOf contentRaw) midTop
+                   , suggestionsElem ] |> centerHorizontally
+                 , resultElem |> centerHorizontally
+                 , staticLinkElem |> centerHorizontally ]
+    content = contentRaw |> centerHorizontally
   in
     showPage w content

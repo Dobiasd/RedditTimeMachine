@@ -42,6 +42,9 @@ topBar w =
               |> container w (heightOf shareIcons) topRight
             , defaultSpacer ] |> color lightBlue
 
+-- todo remove
+-- header _ = spacer 10 10 |> color black
+
 header : Int -> Element
 header w =
   let
