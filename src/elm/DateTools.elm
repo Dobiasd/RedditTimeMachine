@@ -4,6 +4,8 @@ import Date
 
 import Interval(Interval, Days, Weeks, Months, Years)
 
+type DateAsInts = {year: Int, month: Int, day: Int}
+
 data DatePrec = PrecDay | PrecMonth | PrecYear
 
 showDate : DatePrec -> Date.Date -> String
