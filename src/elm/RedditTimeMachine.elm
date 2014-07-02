@@ -15,9 +15,15 @@ import Skeleton(showPage)
 
 import About(about)
 
-import Suggestions(genSuggestions, showSuggestion, maxSuggestions, overflowIndicator, Subreddits, subreddits, suggestionClick, toIntDef, sfwCheck, nsfwCheck, sfwDefault, nsfwDefault)
+import Suggestions(genSuggestions, showSuggestion, maxSuggestions, overflowIndicator, Subreddits, subreddits, suggestionClick, toIntDef, sfwCheck, nsfwCheck)
 
 import Footer(currentPage, MainPage, AboutPage, Page)
+
+import DateTools(floorTimeToPrec, PrecDay, showTimeRange, now)
+import Amount(showAmount, amountDropDown, Amount, amount, readAmount, amountInput)
+import SfwSwitches(toIntDef, sfwCheck, nsfwCheck, Subreddits, showBool, sfwOn, nsfwOn, subreddits, sfw, nsfw, readBoolDef, sfwDefault, nsfwDefault)
+import Criterion(Criterion, showCriterion, criterionDropDown, criterion, readCriterion, criterionInput)
+import Interval(showInterval, Days, Weeks, Months, Interval, interval, intervalDropDown, readInterval, intervalInput)
 
 -- To keep the query text input from swallowing characters
 -- if the generation of suggestions is too slow for the typing speed,
@@ -39,13 +45,20 @@ port sortedByInStr : Signal String
 port intervalInStr : Signal String
 port amountInStr : Signal String
 
-readBoolDef : Bool -> String -> Bool
-readBoolDef def s = if | s == "false" -> False
-                       | s == "true" -> True
-                       | otherwise -> def
+port selected : Signal String
+port selected = suggestionClick.signal
 
-showBool : Bool -> String
-showBool b = if b then "true" else "false"
+port showQuery : Signal Bool
+port showQuery = (\x -> x == MainPage) <~ currentPage
+
+interval : Signal Interval
+interval = merge (readInterval <~ intervalInStr) intervalInput.signal
+
+criterion : Signal Criterion
+criterion = merge (readCriterion <~ sortedByInStr) criterionInput.signal
+
+amount : Signal Amount
+amount = merge (readAmount <~ amountInStr) amountInput.signal
 
 sfwOn : Signal Bool
 sfwOn = merge (readBoolDef sfwDefault <~ sfwInStr) sfwCheck.signal
@@ -53,144 +66,18 @@ sfwOn = merge (readBoolDef sfwDefault <~ sfwInStr) sfwCheck.signal
 nsfwOn : Signal Bool
 nsfwOn = merge (readBoolDef nsfwDefault <~ nsfwInStr) nsfwCheck.signal
 
-port selected : Signal String
-port selected = suggestionClick.signal
+subreddits : Signal Subreddits
+subreddits = (\sfwOn nsfwOn ->
+  (if sfwOn then sfw else []) ++
+  (if nsfwOn then nsfw else []) |> sortBy snd |> reverse)
+  <~ sfwCheck.signal ~ nsfwCheck.signal
 
-port showQuery : Signal Bool
-port showQuery = (\x -> x == MainPage) <~ currentPage
 
-data Criterion = Relevance | Hot | Top | Comments
-data Interval = Days | Weeks | Months | Years
 
-defaultCriterion = Top
-defaultInterval = Weeks
-
-criterionInput : Input Criterion
-criterionInput = input defaultCriterion
-
-criterion : Signal Criterion
-criterion = merge (readCriterion <~ sortedByInStr) criterionInput.signal
-
-interval : Signal Interval
-interval = merge (readInterval <~ intervalInStr) intervalInput.signal
-
-amount : Signal Amount
-amount = merge (readAmount <~ amountInStr) amountInput.signal
-
-readCriterion : String -> Criterion
-readCriterion s =
-    if | s == "relevance" -> Relevance
-       | s == "hot" -> Hot
-       | s == "top" -> Top
-       | s == "comments" -> Comments
-       | otherwise -> defaultCriterion
-
-showCriterion : Criterion -> String
-showCriterion c =
-  case c of
-    Relevance -> "relevance"
-    Hot -> "hot"
-    Top -> "top"
-    Comments -> "comments"
-
-criterionDropDown : Element
-criterionDropDown =
-  let
-    f c = (showCriterion c, c)
-  in
-    dropDown criterionInput.handle <| map f [Top, Hot, Comments, Relevance]
-
-intervalInput : Input Interval
-intervalInput = input defaultInterval
-
-readInterval : String -> Interval
-readInterval s = if | s == "days" -> Days
-                    | s == "weeks" -> Weeks
-                    | s == "months" -> Months
-                    | s == "years" -> Years
-                    | otherwise -> defaultInterval
-
-showInterval : Interval -> String
-showInterval c =
-  case c of
-    Days -> "days"
-    Weeks -> "weeks"
-    Months -> "months"
-    Years -> "years"
-
-intervalDropDown : Element
-intervalDropDown =
-  let
-    f c = (showInterval c, c)
-  in
-    dropDown intervalInput.handle <| map f [Days, Weeks, Months, Years]
-
-defaultAmount : Int
-defaultAmount = 10
-
-type Amount = Int
-
-amountInput : Input Amount
-amountInput = input defaultAmount
-
-readAmount : String -> Amount
-readAmount = toIntDef defaultAmount
-
-showAmount : Amount -> String
-showAmount = show
-
-amountDropDown : Element
-amountDropDown =
-  let
-    f c = (showAmount c, c)
-  in
-    dropDown amountInput.handle <| map f [10, 20, 50, 100, 200, 500, 1000]
-
-data DatePrec = PrecDay | PrecMonth | PrecYear
-
-showDate : DatePrec -> Date.Date -> String
-showDate prec d =
-  let
-    yearStr = show (Date.year d)
-    monthStr = case prec of
-      PrecYear -> "00"
-      _ -> (monthToIntStr . Date.month) d
-    dayStr = case prec of
-      PrecDay -> show (Date.day d) |> String.padLeft 2 '0'
-      _ -> "00"
-  in
-    intersperse "-" [yearStr, monthStr, dayStr] |> concat
-
-monthToIntStr m =
-  case m of
-    Date.Jan -> "01"
-    Date.Feb -> "02"
-    Date.Mar -> "03"
-    Date.Apr -> "04"
-    Date.May -> "05"
-    Date.Jun -> "06"
-    Date.Jul -> "07"
-    Date.Aug -> "08"
-    Date.Sep -> "09"
-    Date.Oct -> "10"
-    Date.Nov -> "11"
-    Date.Dec -> "12"
-
-floorTimeToPrec : DatePrec -> Time -> Time
-floorTimeToPrec prec t =
-  [Date.read (showDate prec (Date.fromTime t))]
-  |> justs |> head |> Date.toTime
-
-showTimeRange : (Time, Time) -> String
-showTimeRange (start, end) =
-  showDate PrecDay (Date.fromTime start) ++ " to " ++ showDate PrecDay (Date.fromTime end)
-
-now : Signal Time
-now = every minute
 
 main : Signal Element
 main = scene <~ (dropRepeats Window.width)
-              ~ sfwOn 
+              ~ sfwOn
               ~ nsfwOn
               ~ subreddits
               ~ merge (String.toLower <~ query) suggestionClick.signal
@@ -203,13 +90,6 @@ main = scene <~ (dropRepeats Window.width)
 genLink : String -> Criterion -> Time -> Time -> String
 genLink name criterion start end =
   "http://www.reddit.com/r/" ++ name ++ "/search?q=timestamp:" ++ show (start/1000) ++ ".." ++ show (end/1000) ++ "&sort=" ++ showCriterion criterion ++ "&restrict_sr=on&syntax=cloudsearch"
-
-intervalInMs : Interval -> Time
-intervalInMs i =
-  case i of
-    Days -> 1000*3600*24
-    Weeks -> 1000*3600*24*7
-    _ -> 0
 
 {-
 calcRanges : Criterion -> Interval -> Int -> Time
