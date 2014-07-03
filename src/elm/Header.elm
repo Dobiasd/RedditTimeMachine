@@ -43,10 +43,10 @@ topBar w =
             , defaultSpacer ] |> color lightBlue
 
 -- todo remove
-header _ = spacer 10 10 |> color black
+--header _ = spacer 10 10 |> color black
 
-aheader : Int -> Element
-aheader w =
+header : Int -> Element
+header w =
   let
     title = flow right [
       toSizedText 32 "reddit time machine"
