@@ -1,5 +1,5 @@
-reddittimemachine.com
-Reddit Time Machine - check out what was up on reddit days/weeks/months ago
+# Reddit Time Machine - check out what was up on reddit days/weeks/months ago
+
 
 http://www.reddit.com/r/help/comments/27eziq/view_top_posts_of_a_specific_timespan/
 
@@ -8,10 +8,6 @@ http://www.reddit.com/dev/api
 
 
 todo:
-
-allow regex
-
-domain reservieren
 
 ausgabe bei monaten und wochen auf jahre aufteilen, bei tagen auf monate
 Die ist dann soviele spalten breit, wie ins fenster passen
@@ -27,6 +23,3 @@ https://github.com/elm-lang/Elm/issues/652
 click auf eine suggestion muss den richtigen wert setzen (wenn nicht geht, normalen button verwenden, der hat aber leider nix fettgedrucktes)
 https://groups.google.com/forum/#!topic/elm-discuss/V7frjla1ZoE
 https://github.com/elm-lang/Elm/issues/668
-
-link zur statischen url setzen wenn das nicht mehr scheppert
-https://github.com/elm-lang/Elm/issues/671
