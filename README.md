@@ -9,19 +9,12 @@ http://www.reddit.com/dev/api
 
 todo:
 
-Links generieren ab june 2005:
-http://www.reddit.com/r/programming/search?q=timestamp:1377993600..1380585600&sort=top&restrict_sr=on&syntax=cloudsearch
-
 domain reservieren
 
 ausgabe bei monaten und wochen auf jahre aufteilen, bei tagen auf monate
 Die ist dann soviele spalten breit, wie ins fenster passen
 
-dates constructen ueber funktion, die intern mit fromString arbeitet
-intervall-ende ist dann nächste Tag minus eine sekunde
-
 code clean up und comments
-
 
 dropDowns muessen von den statischen links auch gesetzt werden
 https://github.com/elm-lang/Elm/issues/670
