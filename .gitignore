@@ -1,5 +1,4 @@
-src/build
-src/cache
-src/stuff
 get_subreddits/sfw
 get_subreddits/nsfw
+get_subreddits/sfw.elm
+get_subreddits/nsfw.elm
