@@ -147,18 +147,15 @@ showStaticLink subredditRaw sfwOn nsfwOn criterion interval amount =
                , toDefText url -- |> link url
                ]
 
--- todo
--- show month ohen day
--- show years ohne month und day
-showTimeSpan : Time -> (Time, Time) -> String
-showTimeSpan timezoneOffset (start, end) =
+showTimeSpan : (String -> String ) -> Time -> (Time, Time) -> String
+showTimeSpan transF timezoneOffset (start, end) =
   let
     showTimeAsDate = showDateAsInts
                    . timeToDateAsInts
                    . (\x -> x + timezoneOffset)
     -- aim at middle of day
-    startStr = showTimeAsDate <| start + 12 * hour
-    endStr = showTimeAsDate <| end - 12 * hour
+    startStr = start + 12 * hour |> showTimeAsDate |> transF
+    endStr = end - 12 * hour |> showTimeAsDate |> transF
   in
     startStr ++ if endStr /= startStr then " - " ++ endStr else ""
 
@@ -167,15 +164,14 @@ showResult : String -> Bool -> Bool -> Criterion -> Interval -> Int -> Time
 showResult rawName sfwOn nsfwOn criterion interval amount now timezoneOffset =
   let
     name = avoidEmptySubredditName rawName
-    --lastNFunc = lastNWeekSpans
-    lastNFunc = case interval of
-      Days -> lastNDaySpans
-      Weeks -> lastNWeekSpans
-      Months -> lastNMonthsSpans
-      Years -> lastNYearsSpans
+    (lastNFunc, transF) = case interval of
+      Days -> (lastNDaySpans, id)
+      Weeks -> (lastNWeekSpans, id)
+      Months -> (lastNMonthsSpans, String.dropRight 3)
+      Years -> (lastNYearsSpans, String.dropRight 6)
     spans = lastNFunc amount now
     urls = map (genLink name criterion) spans
-    texts = map (showTimeSpan timezoneOffset) spans
+    texts = map (showTimeSpan transF timezoneOffset) spans
   in
     -- todo: use links when this is solved:
     -- https://github.com/elm-lang/Elm/issues/671
