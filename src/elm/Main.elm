@@ -235,7 +235,7 @@ mainPage : Int -> Bool -> Bool -> Bool -> Subreddits -> String -> Criterion
 mainPage w useRegex sfwOn nsfwOn names query criterion interval amount
          now timezoneOffset =
   let
-    suggestions = genSuggestions names query useRegex
+    suggestions = genSuggestions useRegex names query
     suggestionElems = suggestions |> take maxSuggestions
                       |> map (showSuggestion query)
     suggestionsElemRaw = suggestionElems

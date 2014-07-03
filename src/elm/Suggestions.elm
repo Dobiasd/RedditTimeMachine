@@ -3,6 +3,7 @@ module Suggestions where
 import SfwSwitches(Subreddits)
 
 import Graphics.Input (Input, input, button, customButton)
+import Regex
 
 maxSuggestions : Int
 maxSuggestions = 10
@@ -16,8 +17,19 @@ useRegexDefault = False
 useRegexCheck : Input Bool
 useRegexCheck = input useRegexDefault
 
-genSuggestions : Subreddits -> String -> Bool -> [String]
-genSuggestions names query regexOn =
+genSuggestions : Bool -> Subreddits -> String -> [String]
+genSuggestions useRegex =
+  if useRegex then genSuggestionsRegex else genSuggestionsString
+
+genSuggestionsRegex : Subreddits -> String -> [String]
+genSuggestionsRegex names query =
+  let
+    ex = query |> Regex.regex
+  in
+    filter (Regex.contains ex . fst) names |> map fst
+
+genSuggestionsString : Subreddits -> String -> [String]
+genSuggestionsString names query =
   let
     allStarting = filter (String.startsWith query . fst) names
     allContaining = filter (containsNotStartsWith query . fst) names
