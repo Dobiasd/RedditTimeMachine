@@ -15,7 +15,7 @@ function GetTimezoneOffsetInMinutes() {
 function Init() {
   lastQuery = getURLParameterDef("subreddit", "");
   var mainDiv = document.getElementById('main');
-  page = Elm.embed(Elm.RedditTimeMachine, mainDiv,
+  page = Elm.embed(Elm.Main, mainDiv,
                    {query : lastQuery,
                     timezoneOffsetInMinutes : GetTimezoneOffsetInMinutes(),
                     sfwInStr : getURLParameterDef("sfw", ""),
