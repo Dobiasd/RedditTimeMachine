@@ -8,7 +8,8 @@ import Text
 import String
 import Window
 
-import Layout (defaultSpacer, pageWidth, bgColor, toDefText, toSizedText)
+import Layout (defaultSpacer, pageWidth, bgColor, toDefText, toSizedText
+             , toSizedTextMod)
 import Skeleton (showPage)
 import About (about)
 import Suggestions (genSuggestions, showSuggestion, maxSuggestions
@@ -144,13 +145,13 @@ showStaticLink query useRegex sfwOn nsfwOn criterion interval amount =
   let
     url = genStaticLink query useRegex sfwOn nsfwOn criterion interval amount
   in
-    flow down [ toDefText "static link to this list:"
+    flow right [ toSizedText 16 "static link to this list: "
                  -- todo: use link
                  -- using link here results in:
                  -- "TypeError: e.lastNode is undefined"
                  -- https://github.com/elm-lang/Elm/issues/671
                  -- (see also in showResult)
-               , toDefText url |> link url
+               , toSizedTextMod (line Under) 14 url |> link url
                ]
 
 showTimeSpan : (String -> String) -> Time -> (Time, Time) -> String
@@ -182,7 +183,7 @@ showResult rawName sfwOn nsfwOn criterion interval amount now timezoneOffset =
     -- todo: use links when this is solved:
     -- https://github.com/elm-lang/Elm/issues/671
     -- (see also in showStaticLink)
-    zipWith (\t url -> plainText t |> link url) texts urls |> flow down
+    zipWith (\t url -> toSizedText 16 t |> link url) texts urls |> flow down
 
 scene : Int -> Bool -> Bool -> Bool -> Subreddits -> String -> Criterion
      -> Interval -> Int -> Time -> Time -> Page -> Element
