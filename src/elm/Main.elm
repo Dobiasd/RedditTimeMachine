@@ -144,7 +144,7 @@ showStaticLink subredditRaw sfwOn nsfwOn criterion interval amount =
                  -- "TypeError: e.lastNode is undefined"
                  -- https://github.com/elm-lang/Elm/issues/671
                  -- (see also in showResult)
-               , toDefText url -- |> link url
+               , toDefText url |> link url
                ]
 
 showTimeSpan : (String -> String ) -> Time -> (Time, Time) -> String

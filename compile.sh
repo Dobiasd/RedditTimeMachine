@@ -10,7 +10,9 @@ cp -r ./src/imgs ./build
 
 mkdir -p ./build/js
 
-uglifyjs $HOME/.cabal/share/Elm-0.12.3/elm-runtime.js > ./build/js/elm-runtime.js
+#uglifyjs $HOME/.cabal/share/Elm-0.12.3/elm-runtime.js > ./build/js/elm-runtime.js
+#evil hack to work around https://github.com/elm-lang/Elm/issues/671
+cat $HOME/.cabal/share/Elm-0.12.3/elm-runtime.js | perl -pe "s/if \(currP.href === ''\) {/if (currP.href === '' || !node.lastNode) {/g" > ./build/js/elm-runtime.js
 
 for pathname in ./build/src/elm/*.js
 do
