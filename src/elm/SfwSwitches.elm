@@ -5,7 +5,8 @@ import Graphics.Input (Input, input)
 import Sfw
 import Nsfw
 
-type Subreddits = [(String, Int)]
+type Subreddit = (String, Int)
+type Subreddits = [Subreddit]
 
 toIntDef : Int -> String -> Int
 toIntDef def x = case String.toInt x of
