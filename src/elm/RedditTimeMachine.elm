@@ -15,7 +15,7 @@ import Suggestions (genSuggestions, showSuggestion, maxSuggestions
                   , overflowIndicator, Subreddits, subreddits, suggestionClick
                   , toIntDef, sfwCheck, nsfwCheck)
 import Footer (currentPage, MainPage, AboutPage, Page)
-import DateTools (ceilTimeToPrec, PrecDay, showTimeRange, now, showDate)
+import DateTools (lastNDaySpans, showDateAsInts, timeToDateAsInts)
 import Amount (showAmount, amountDropDown, Amount, amount, readAmount
              , amountInput)
 import SfwSwitches (toIntDef, sfwCheck, nsfwCheck, Subreddits, showBool, sfwOn
@@ -39,6 +39,8 @@ import Interval (showInterval, Days, Weeks, Months, Interval, interval
 -- overwrite every character with the next one with normal typing.
 port query : Signal String
 
+port timezoneOffsetInMinutes : Signal Int
+
 -- for static links with paramters in URL
 port sfwInStr : Signal String
 port nsfwInStr : Signal String
@@ -51,6 +53,13 @@ port selected = suggestionClick.signal
 
 port showQuery : Signal Bool
 port showQuery = (\x -> x == MainPage) <~ currentPage
+
+now : Signal Time
+now = every minute
+
+timezoneOffset : Signal Time
+timezoneOffset = (\x -> toFloat x * minute)
+                   <~ (dropRepeats timezoneOffsetInMinutes)
 
 interval : Signal Interval
 interval = merge (readInterval <~ intervalInStr) intervalInput.signal
@@ -73,6 +82,7 @@ subreddits = (\sfwOn nsfwOn ->
   (if nsfwOn then nsfw else []) |> sortBy snd |> reverse)
   <~ sfwOn ~ nsfwOn
 
+-- todo: outfactor search options
 main : Signal Element
 main = scene <~ (dropRepeats Window.width)
               ~ sfwOn
@@ -83,13 +93,14 @@ main = scene <~ (dropRepeats Window.width)
               ~ interval
               ~ amount
               ~ now
+              ~ timezoneOffset
               ~ currentPage
 
-genLink : String -> Criterion -> Time -> Time -> String
-genLink name criterion start end =
+genLink : String -> Criterion -> (Time, Time) -> String
+genLink name criterion (start, end) =
   staticLink ("http://www.reddit.com/r/" ++ name ++ "/search")
-             [ ("q", "timestamp:" ++ show (start/1000) ++ ".."
-                                  ++ show (end/1000))
+             [ ("q", "timestamp:" ++ show (start/second) ++ ".."
+                                  ++ show (end/second))
              , ("sort", showCriterion criterion)
              , ("restrict_sr", "on")
              , ("syntax", "cloudsearch") ]
@@ -130,30 +141,33 @@ showStaticLink subredditRaw sfwOn nsfwOn criterion interval amount =
                  -- using link here results in:
                  -- "TypeError: e.lastNode is undefined"
                  -- https://github.com/elm-lang/Elm/issues/671
+                 -- (see also in showResult)
                , toDefText url -- |> link url
                ]
 
 showResult : String -> Bool -> Bool -> Criterion -> Interval -> Int -> Time
-          -> Element
-showResult rawName sfwOn nsfwOn criterion interval amount now =
+          -> Time -> Element
+showResult rawName sfwOn nsfwOn criterion interval amount now timezoneOffset =
   let
-    today = ceilTimeToPrec PrecDay now
     name = avoidEmptySubredditName rawName
-    start = today - 1000*3600*24*10
-    end = today - 1000*3600*24*9
-    url = genLink name criterion start end
-    tRangeStr = showTimeRange (start, end)
+    daySpans = lastNDaySpans amount now
+    urls = map (genLink name criterion) daySpans
+    texts = map showSpan daySpans
+    showTimeAsDate = showDateAsInts . timeToDateAsInts . (\x -> x + timezoneOffset)
+    showSpan (s, e) = showTimeAsDate s ++ " - " ++ showTimeAsDate e
   in
-    [ spacer pageWidth 1 |> color lightOrange
-    , Text.link url (toText ("/r/" ++ name ++ " " ++ tRangeStr)) |> centered
-    ] |> intersperse defaultSpacer |> flow down
+    -- todo: use links when this is solved:
+    -- https://github.com/elm-lang/Elm/issues/671
+    -- (see also in showStaticLink)
+    zipWith (\t url -> plainText t |> link url) texts urls |> flow down
 
 scene : Int -> Bool -> Bool -> Subreddits -> String -> Criterion -> Interval
-     -> Int -> Time -> Page -> Element
-scene w sfwOn nsfwOn names query criterion interval amount now page =
+     -> Int -> Time -> Time -> Page -> Element
+scene w sfwOn nsfwOn names query criterion interval amount
+      now timezoneOffset page  =
   case page of
     MainPage -> mainPage w sfwOn nsfwOn names query criterion interval amount
-                now
+                now timezoneOffset
     AboutPage -> about w
 
 showInputs : Bool -> Bool -> Criterion -> Interval -> Amount -> Element
@@ -183,8 +197,9 @@ showLeftBody sfwOn nsfwOn criterion interval amount =
               , flow right [ inputElem, defaultSpacer, defaultSpacer ] ]
 
 mainPage : Int -> Bool -> Bool -> Subreddits -> String -> Criterion
-        -> Interval -> Amount -> Time -> Element
-mainPage w sfwOn nsfwOn names query criterion interval amount now =
+        -> Interval -> Amount -> Time -> Time -> Element
+mainPage w sfwOn nsfwOn names query criterion interval amount
+         now timezoneOffset =
   let
     suggestions = genSuggestions names query
     suggestionElems = suggestions |> take maxSuggestions
@@ -197,7 +212,8 @@ mainPage w sfwOn nsfwOn names query criterion interval amount now =
     suggestionsElem = suggestionsElemRaw
                       |> container 200 (heightOf suggestionsElemRaw) topLeft
 
-    resultElem = showResult query sfwOn nsfwOn criterion interval amount now
+    resultElem = showResult query sfwOn nsfwOn criterion interval amount
+                            now timezoneOffset
     staticLinkElem = showStaticLink query sfwOn nsfwOn criterion interval
                                     amount
     bodyLeft = showLeftBody sfwOn nsfwOn criterion interval amount
@@ -212,4 +228,3 @@ mainPage w sfwOn nsfwOn names query criterion interval amount now =
     content = contentRaw |> centerHorizontally
   in
     showPage w content
-    --Date.fromTime now |> showDate PrecDay |> asText

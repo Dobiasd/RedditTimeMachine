@@ -4,67 +4,112 @@ import Date
 
 import Interval(Interval, Days, Weeks, Months, Years)
 
+
+-- (start, end)
+type TimeSpan = (Time, Time)
+
 type DateAsInts = {year: Int, month: Int, day: Int}
+dateAsInts y m d = {year = y, month = m, day =d}
 
-data DatePrec = PrecDay | PrecMonth | PrecYear
+oneDay : Time
+oneDay = 24*60*60*second
 
-showDate : DatePrec -> Date.Date -> String
-showDate prec d =
+oneMinute : Time
+oneMinute = 1*60*second
+
+iterate : Int -> (a -> a) -> a -> [a]
+iterate n f x = if n < 1 then [] else x :: iterate (n-1) f (f x)
+
+lastNDays : Int -> DateAsInts -> [DateAsInts]
+lastNDays n today = iterate n dateAsIntsMinusOneDay today
+
+lastNDayStarts : Int -> Time -> [Time]
+lastNDayStarts n now =
   let
-    yearStr = show (Date.year d)
-    monthStr = case prec of
-      PrecYear -> "00"
-      _ -> (monthToIntStr . Date.month) d
-    dayStr = case prec of
-      PrecDay -> show (Date.day d) |> String.padLeft 2 '0'
-      _ -> "00"
+    today = now |> timeToDateAsInts
   in
-    intersperse "-" [yearStr, monthStr, dayStr] |> concat
+    lastNDays n today |> map dateAsIntsToTime
 
-monthToIntStr m =
-  case m of
-    Date.Jan -> "01"
-    Date.Feb -> "02"
-    Date.Mar -> "03"
-    Date.Apr -> "04"
-    Date.May -> "05"
-    Date.Jun -> "06"
-    Date.Jul -> "07"
-    Date.Aug -> "08"
-    Date.Sep -> "09"
-    Date.Oct -> "10"
-    Date.Nov -> "11"
-    Date.Dec -> "12"
-
-floorTimeToPrec : DatePrec -> Time -> Time
-floorTimeToPrec prec t =
-  [Date.read (showDate prec (Date.fromTime t))]
-  |> justs |> head |> Date.toTime
-
--- todo plus one chosen time unit
-ceilTimeToPrec : DatePrec -> Time -> Time
-ceilTimeToPrec prec t = floorTimeToPrec prec t
-
-ceilTimeForInterval : Interval -> Time -> Time
-ceilTimeForInterval interval =
-  case interval of
-    Days -> ceilTimeToPrec PrecDay
-    Weeks -> ceilTimeToPrec PrecDay
-    Months -> ceilTimeToPrec PrecMonth
-    Years -> ceilTimeToPrec PrecYear
-
-showTimeRange : (Time, Time) -> String
-showTimeRange (start, end) =
-  showDate PrecDay (Date.fromTime start) ++ " to "
-    ++ showDate PrecDay (Date.fromTime end)
-
-{-
-calcRanges : Criterion -> Interval -> Int -> Time
-calcRanges rawName criterion interval amount today =
+lastNDaySpans : Int -> Time -> [TimeSpan]
+lastNDaySpans n now =
   let
-    lastDay =
-    nums = [0..amount]
--}
+    starts = lastNDayStarts n now
+  in
+    -- two times one minute buffer for leap seconds and stuff
+    map (\x -> (x + oneMinute, x + oneDay - oneMinute)) starts
 
-now : Signal Time
-now = every minute
+dateAsIntsMinusOneDay : DateAsInts -> DateAsInts
+dateAsIntsMinusOneDay intDate =
+  let
+    d' = { intDate | day <- intDate.day - 1 }
+    minusOneMonthWrongDay = dateAsIntsMinusOneMonth d'
+  in
+    if | d'.day < 1 ->
+         { minusOneMonthWrongDay | day <- lastDayInMonth minusOneMonthWrongDay }
+       | otherwise -> d'
+
+lastDayInMonth : DateAsInts -> Int
+lastDayInMonth {year, month} =
+  if | month == 1 -> 31
+     | month == 2 -> if year `mod` 4 == 0 then 29 else 28
+     | month == 3 -> 31
+     | month == 4 -> 30
+     | month == 5 -> 31
+     | month == 6 -> 30
+     | month == 7 -> 31
+     | month == 8 -> 31
+     | month == 9 -> 30
+     | month == 10 -> 31
+     | month == 11 -> 30
+     | month == 12 -> 31
+
+dateAsIntsMinusOneMonth : DateAsInts -> DateAsInts
+dateAsIntsMinusOneMonth ({month} as intDate) =
+  let
+    d' = { intDate | month <- intDate.month - 1 }
+    minusOneYearWrongMonth = dateAsIntsMinusOneYear d'
+  in
+    if | d'.month < 1 -> { minusOneYearWrongMonth | month <- 12 }
+       | otherwise -> d'
+
+dateAsIntsMinusOneYear : DateAsInts -> DateAsInts
+dateAsIntsMinusOneYear ({year} as intDate) =
+  { intDate | year <- year - 1 }
+
+dateToDateAsInts : Date.Date -> DateAsInts
+dateToDateAsInts date =
+  dateAsInts (Date.year date) (Date.month date |> monthToInt) (Date.day date)
+
+timeToDateAsInts : Time -> DateAsInts
+timeToDateAsInts = dateToDateAsInts . Date.fromTime
+
+dateAsIntsToTime : DateAsInts -> Time
+dateAsIntsToTime = Date.toTime . readDate . showDateAsInts
+
+showDateAsInts : DateAsInts -> String
+showDateAsInts intDate = 
+  let
+    pad = String.padLeft 2 '0'
+    yearStr = show intDate.year
+    monthStr = show intDate.month |> pad
+    dayStr = show intDate.day |> pad
+  in
+    join "-" [yearStr, monthStr, dayStr]
+
+readDate : String -> Date.Date
+readDate s = [Date.read s] |> justs |> head
+
+monthToInt m =
+  case m of
+    Date.Jan ->  1
+    Date.Feb ->  2
+    Date.Mar ->  3
+    Date.Apr ->  4
+    Date.May ->  5
+    Date.Jun ->  6
+    Date.Jul ->  7
+    Date.Aug ->  8
+    Date.Sep ->  9
+    Date.Oct -> 10
+    Date.Nov -> 11
+    Date.Dec -> 12

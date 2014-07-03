@@ -8,16 +8,21 @@ function getURLParameterDef(name, def) {
     return val;
   return def;
 }
+function GetTimezoneOffsetInMinutes() {
+  var x = new Date();
+  return x.getTimezoneOffset();
+}
 function Init() {
   lastQuery = getURLParameterDef("subreddit", "");
   var mainDiv = document.getElementById('main');
   page = Elm.embed(Elm.RedditTimeMachine, mainDiv,
-                   {query:lastQuery,
-                    sfwInStr:getURLParameterDef("sfw", ""),
-                    nsfwInStr:getURLParameterDef("nsfw", ""),
-                    sortedByInStr:getURLParameterDef("sortedby", ""),
-                    intervalInStr:getURLParameterDef("interval", ""),
-                    amountInStr:getURLParameterDef("amount", ""),});
+                   {query : lastQuery,
+                    timezoneOffsetInMinutes : GetTimezoneOffsetInMinutes(),
+                    sfwInStr : getURLParameterDef("sfw", ""),
+                    nsfwInStr : getURLParameterDef("nsfw", ""),
+                    sortedByInStr : getURLParameterDef("sortedby", ""),
+                    intervalInStr : getURLParameterDef("interval", ""),
+                    amountInStr : getURLParameterDef("amount", "")});
 
   ShowQuery(true);
   page.ports.selected.subscribe(Selected);
@@ -31,6 +36,7 @@ function CheckQuery() {
   query = queryElem.value;
   if (query != lastQuery) {
     lastQuery = query;
+    page.ports.timezoneOffsetInMinutes.send(GetTimezoneOffsetInMinutes());
     page.ports.query.send(query);
     SetTitle(query);
   }
