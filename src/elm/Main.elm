@@ -1,4 +1,4 @@
-module RedditTimeMachine where
+module Main where
 
 import Graphics.Input (Input, input, dropDown, checkbox)
 import Graphics.Input

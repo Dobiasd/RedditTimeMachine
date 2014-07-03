@@ -3,7 +3,7 @@
 #rm -r build
 #rm -r cache
 
-elm -m -o --src-dir=./src/elm --set-runtime=elm-runtime.js src/elm/RedditTimeMachine.elm
+elm -m -o --src-dir=./src/elm --set-runtime=elm-runtime.js src/elm/Main.elm
 
 cp -r ./src/icons ./build
 cp -r ./src/imgs ./build
