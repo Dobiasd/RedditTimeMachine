@@ -1,5 +1,5 @@
-# Reddit Time Machine - check out what was up on reddit days/weeks/months ago
-
+# Reddit Time Machine
+## check out what was up on reddit days/weeks/months ago
 
 http://www.reddit.com/r/help/comments/27eziq/view_top_posts_of_a_specific_timespan/
 
