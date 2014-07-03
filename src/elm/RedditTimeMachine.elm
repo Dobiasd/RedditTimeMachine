@@ -15,7 +15,8 @@ import Suggestions (genSuggestions, showSuggestion, maxSuggestions
                   , overflowIndicator, Subreddits, subreddits, suggestionClick
                   , toIntDef, sfwCheck, nsfwCheck)
 import Footer (currentPage, MainPage, AboutPage, Page)
-import DateTools (lastNDaySpans, showDateAsInts, timeToDateAsInts)
+import DateTools (lastNDaySpans, showDateAsInts, timeToDateAsInts
+                , lastNWeekSpans, lastNMonthsSpans, lastNYearsSpans)
 import Amount (showAmount, amountDropDown, Amount, amount, readAmount
              , amountInput)
 import SfwSwitches (toIntDef, sfwCheck, nsfwCheck, Subreddits, showBool, sfwOn
@@ -23,7 +24,7 @@ import SfwSwitches (toIntDef, sfwCheck, nsfwCheck, Subreddits, showBool, sfwOn
                   , nsfwDefault)
 import Criterion (Criterion, showCriterion, criterionDropDown, criterion
                 , readCriterion, criterionInput)
-import Interval (showInterval, Days, Weeks, Months, Interval, interval
+import Interval (showInterval, Days, Weeks, Months, Years, Interval, interval
                , intervalDropDown, readInterval, intervalInput)
 
 -- To keep the query text input from swallowing characters
@@ -138,6 +139,7 @@ showStaticLink subredditRaw sfwOn nsfwOn criterion interval amount =
     url = genStaticLink subreddit sfwOn nsfwOn criterion interval amount
   in
     flow down [ toDefText "static link to this list:"
+                 -- todo: use link
                  -- using link here results in:
                  -- "TypeError: e.lastNode is undefined"
                  -- https://github.com/elm-lang/Elm/issues/671
@@ -145,16 +147,35 @@ showStaticLink subredditRaw sfwOn nsfwOn criterion interval amount =
                , toDefText url -- |> link url
                ]
 
+-- todo
+-- show month ohen day
+-- show years ohne month und day
+showTimeSpan : Time -> (Time, Time) -> String
+showTimeSpan timezoneOffset (start, end) =
+  let
+    showTimeAsDate = showDateAsInts
+                   . timeToDateAsInts
+                   . (\x -> x + timezoneOffset)
+    -- aim at middle of day
+    startStr = showTimeAsDate <| start + 12 * hour
+    endStr = showTimeAsDate <| end - 12 * hour
+  in
+    startStr ++ if endStr /= startStr then " - " ++ endStr else ""
+
 showResult : String -> Bool -> Bool -> Criterion -> Interval -> Int -> Time
           -> Time -> Element
 showResult rawName sfwOn nsfwOn criterion interval amount now timezoneOffset =
   let
     name = avoidEmptySubredditName rawName
-    daySpans = lastNDaySpans amount now
-    urls = map (genLink name criterion) daySpans
-    texts = map showSpan daySpans
-    showTimeAsDate = showDateAsInts . timeToDateAsInts . (\x -> x + timezoneOffset)
-    showSpan (s, e) = showTimeAsDate s ++ " - " ++ showTimeAsDate e
+    --lastNFunc = lastNWeekSpans
+    lastNFunc = case interval of
+      Days -> lastNDaySpans
+      Weeks -> lastNWeekSpans
+      Months -> lastNMonthsSpans
+      Years -> lastNYearsSpans
+    spans = lastNFunc amount now
+    urls = map (genLink name criterion) spans
+    texts = map (showTimeSpan timezoneOffset) spans
   in
     -- todo: use links when this is solved:
     -- https://github.com/elm-lang/Elm/issues/671

@@ -14,11 +14,18 @@ dateAsInts y m d = {year = y, month = m, day =d}
 oneDay : Time
 oneDay = 24*60*60*second
 
-oneMinute : Time
-oneMinute = 1*60*second
+oneWeek : Time
+oneWeek = 7 * oneDay
 
 iterate : Int -> (a -> a) -> a -> [a]
 iterate n f x = if n < 1 then [] else x :: iterate (n-1) f (f x)
+
+applyNTimes : Int -> (a -> a) -> a -> a
+applyNTimes n f x =
+  if | n == 0 -> x
+     | otherwise -> iterate (n + 1) f x |> last
+
+-- days
 
 lastNDays : Int -> DateAsInts -> [DateAsInts]
 lastNDays n today = iterate n dateAsIntsMinusOneDay today
@@ -35,8 +42,83 @@ lastNDaySpans n now =
   let
     starts = lastNDayStarts n now
   in
-    -- two times one minute buffer for leap seconds and stuff
-    map (\x -> (x + oneMinute, x + oneDay - oneMinute)) starts
+    map (\x -> (x, x + oneDay)) starts
+
+-- weeks
+
+lastNWeeks : Int -> DateAsInts -> [DateAsInts]
+lastNWeeks n today = iterate n dateAsIntsMinusOneWeek today
+
+floorWeek : DateAsInts -> DateAsInts
+floorWeek intDate =
+  let
+    weekday = intDate |> showDateAsInts |> readDate |> Date.dayOfWeek
+    n : Int
+    n = case weekday of
+          Date.Mon -> 0
+          Date.Tue -> 1
+          Date.Wed -> 2
+          Date.Thu -> 3
+          Date.Fri -> 4
+          Date.Sat -> 5
+          Date.Sun -> 6
+  in
+    applyNTimes n dateAsIntsMinusOneDay intDate
+
+lastNWeekStarts : Int -> Time -> [Time]
+lastNWeekStarts n now =
+  let
+    today = now |> timeToDateAsInts
+    lastMonday = floorWeek today
+  in
+    lastNWeeks n lastMonday |> map dateAsIntsToTime
+
+lastNWeekSpans : Int -> Time -> [TimeSpan]
+lastNWeekSpans n now =
+  let
+    starts = lastNWeekStarts n now
+  in
+    map (\x -> (x, x + oneWeek)) starts
+
+-- months
+
+lastNMonthsSpans : Int -> Time -> [TimeSpan]
+lastNMonthsSpans n now =
+  let
+    starts = now |> timeToDateAsInts
+                 |> floorMonth
+                 |> iterate n dateAsIntsMinusOneMonth
+  in
+    map (\x -> (dateAsIntsToTime x, dateAsIntsToTime (ceilMonth x) + oneDay)) starts
+
+ceilMonth : DateAsInts -> DateAsInts
+ceilMonth ({day} as intDate) = { intDate | day <- lastDayInMonth intDate }
+
+floorMonth : DateAsInts -> DateAsInts
+floorMonth ({day} as intDate) = { intDate | day <- 1 }
+
+-- years
+
+lastNYearsSpans : Int -> Time -> [TimeSpan]
+lastNYearsSpans n now =
+  let
+    starts = now |> timeToDateAsInts
+                 |> floorYear
+                 |> iterate n dateAsIntsMinusOneYear
+  in
+    map (\x -> (dateAsIntsToTime x, dateAsIntsToTime (ceilYear x) + oneDay)) starts
+
+ceilYear : DateAsInts -> DateAsInts
+ceilYear ({day, month} as intDate) =
+  { intDate | day <- lastDayInMonth intDate
+            , month <- 12 }
+
+floorYear : DateAsInts -> DateAsInts
+floorYear ({day, month} as intDate) =
+  { intDate | day <- 1
+            , month <- 1 }
+
+--
 
 dateAsIntsMinusOneDay : DateAsInts -> DateAsInts
 dateAsIntsMinusOneDay intDate =
@@ -47,6 +129,9 @@ dateAsIntsMinusOneDay intDate =
     if | d'.day < 1 ->
          { minusOneMonthWrongDay | day <- lastDayInMonth minusOneMonthWrongDay }
        | otherwise -> d'
+
+dateAsIntsMinusOneWeek : DateAsInts -> DateAsInts
+dateAsIntsMinusOneWeek = applyNTimes 7 dateAsIntsMinusOneDay
 
 lastDayInMonth : DateAsInts -> Int
 lastDayInMonth {year, month} =
