@@ -13,7 +13,7 @@ import Skeleton (showPage)
 import About (about)
 import Suggestions (genSuggestions, showSuggestion, maxSuggestions
                   , overflowIndicator, Subreddits, subreddits, suggestionClick
-                  , toIntDef, sfwCheck, nsfwCheck)
+                  , toIntDef, useRegexCheck, useRegexDefault)
 import Footer (currentPage, MainPage, AboutPage, Page)
 import DateTools (lastNDaySpans, showDateAsInts, timeToDateAsInts
                 , lastNWeekSpans, lastNMonthsSpans, lastNYearsSpans)
@@ -43,6 +43,7 @@ port query : Signal String
 port timezoneOffsetInMinutes : Signal Int
 
 -- for static links with paramters in URL
+port useRegexInStr : Signal String
 port sfwInStr : Signal String
 port nsfwInStr : Signal String
 port sortedByInStr : Signal String
@@ -71,6 +72,10 @@ criterion = merge (readCriterion <~ sortedByInStr) criterionInput.signal
 amount : Signal Amount
 amount = merge (readAmount <~ amountInStr) amountInput.signal
 
+useRegex : Signal Bool
+useRegex = merge (readBoolDef useRegexDefault <~ useRegexInStr)
+                 useRegexCheck.signal
+
 sfwOn : Signal Bool
 sfwOn = merge (readBoolDef sfwDefault <~ sfwInStr) sfwCheck.signal
 
@@ -86,6 +91,7 @@ subreddits = (\sfwOn nsfwOn ->
 -- todo: outfactor search options
 main : Signal Element
 main = scene <~ (dropRepeats Window.width)
+              ~ useRegex
               ~ sfwOn
               ~ nsfwOn
               ~ subreddits
@@ -114,11 +120,12 @@ staticLink base parameters =
   in
     base ++ (if String.isEmpty addon then "" else "?" ++ addon)
 
-genStaticLink : String -> Bool -> Bool -> Criterion -> Interval -> Int
-             -> String
-genStaticLink subreddit sfwOn nsfwOn criterion interval amount =
+genStaticLink : String -> Bool -> Bool -> Bool -> Criterion -> Interval
+             -> Int -> String
+genStaticLink query useRegex sfwOn nsfwOn criterion interval amount =
   staticLink "http://www.reddittimemachine.com/index.html"
-    [ ("subreddit", subreddit)
+    [ ("query", query)
+    , ("useregex", showBool useRegex)
     , ("sfw", showBool sfwOn)
     , ("nsfw", showBool nsfwOn)
     , ("sortedby", showCriterion criterion)
@@ -131,12 +138,11 @@ notEmptyOr def s = if String.isEmpty s then def else s
 avoidEmptySubredditName : String -> String
 avoidEmptySubredditName = notEmptyOr "all"
 
-showStaticLink : String -> Bool -> Bool -> Criterion -> Interval -> Int
-              -> Element
-showStaticLink subredditRaw sfwOn nsfwOn criterion interval amount =
+showStaticLink : String -> Bool -> Bool -> Bool -> Criterion -> Interval
+              -> Int -> Element
+showStaticLink query useRegex sfwOn nsfwOn criterion interval amount =
   let
-    subreddit = avoidEmptySubredditName subredditRaw
-    url = genStaticLink subreddit sfwOn nsfwOn criterion interval amount
+    url = genStaticLink query useRegex sfwOn nsfwOn criterion interval amount
   in
     flow down [ toDefText "static link to this list:"
                  -- todo: use link
@@ -147,7 +153,7 @@ showStaticLink subredditRaw sfwOn nsfwOn criterion interval amount =
                , toDefText url |> link url
                ]
 
-showTimeSpan : (String -> String ) -> Time -> (Time, Time) -> String
+showTimeSpan : (String -> String) -> Time -> (Time, Time) -> String
 showTimeSpan transF timezoneOffset (start, end) =
   let
     showTimeAsDate = showDateAsInts
@@ -178,47 +184,57 @@ showResult rawName sfwOn nsfwOn criterion interval amount now timezoneOffset =
     -- (see also in showStaticLink)
     zipWith (\t url -> plainText t |> link url) texts urls |> flow down
 
-scene : Int -> Bool -> Bool -> Subreddits -> String -> Criterion -> Interval
-     -> Int -> Time -> Time -> Page -> Element
-scene w sfwOn nsfwOn names query criterion interval amount
+scene : Int -> Bool -> Bool -> Bool -> Subreddits -> String -> Criterion
+     -> Interval -> Int -> Time -> Time -> Page -> Element
+scene w regexOn sfwOn nsfwOn names query criterion interval amount
       now timezoneOffset page  =
   case page of
-    MainPage -> mainPage w sfwOn nsfwOn names query criterion interval amount
+    MainPage -> mainPage w regexOn sfwOn nsfwOn names query criterion interval amount
                 now timezoneOffset
     AboutPage -> about w
 
-showInputs : Bool -> Bool -> Criterion -> Interval -> Amount -> Element
-showInputs sfwOn nsfwOn criterion interval amount =
+showInputs : Bool -> Bool -> Bool -> Criterion -> Interval -> Amount
+          -> Element
+showInputs useRegex sfwOn nsfwOn criterion interval amount =
   let
+    useRegexCheckBox = checkbox useRegexCheck.handle id useRegex |> width 23
     sfwCheckBox = checkbox sfwCheck.handle id sfwOn |> width 23
     nsfwCheckBox = checkbox nsfwCheck.handle id nsfwOn |> width 23
     labelSizeF = width 120
     rows =
       [ spacer 0 0 |> color bgColor
+      , flow right [
+          flow right [
+            toSizedText 16 "use "
+          , toSizedText 16 "regex"
+            |> link "http://en.wikipedia.org/wiki/Regular_expression"
+          , toSizedText 16 ":" ]
+          |> labelSizeF, useRegexCheckBox ]
       , flow right [ toDefText "sfw:"       |> labelSizeF, sfwCheckBox ]
       , flow right [ toDefText "nsfw:"      |> labelSizeF, nsfwCheckBox ]
       , defaultSpacer
       , flow right [ toDefText "sorted by:" |> labelSizeF, criterionDropDown ]
       , flow right [ toDefText "interval:"  |> labelSizeF, intervalDropDown ]
       , flow right [ toDefText "amount:"    |> labelSizeF, amountDropDown ]
-      , spacer 10 40 ]
+      , defaultSpacer ]
   in
     intersperse defaultSpacer rows |> flow down
 
-showLeftBody : Bool -> Bool -> Criterion -> Interval -> Amount -> Element
-showLeftBody sfwOn nsfwOn criterion interval amount =
+showLeftBody : Bool -> Bool -> Bool -> Criterion -> Interval -> Amount
+            -> Element
+showLeftBody useRegex sfwOn nsfwOn criterion interval amount =
   let
-    inputElem = showInputs sfwOn nsfwOn criterion interval amount
+    inputElem = showInputs useRegex sfwOn nsfwOn criterion interval amount
   in
     flow down [ spacer 1 30 |> color bgColor -- room for text input field
               , flow right [ inputElem, defaultSpacer, defaultSpacer ] ]
 
-mainPage : Int -> Bool -> Bool -> Subreddits -> String -> Criterion
+mainPage : Int -> Bool -> Bool -> Bool -> Subreddits -> String -> Criterion
         -> Interval -> Amount -> Time -> Time -> Element
-mainPage w sfwOn nsfwOn names query criterion interval amount
+mainPage w useRegex sfwOn nsfwOn names query criterion interval amount
          now timezoneOffset =
   let
-    suggestions = genSuggestions names query
+    suggestions = genSuggestions names query useRegex
     suggestionElems = suggestions |> take maxSuggestions
                       |> map (showSuggestion query)
     suggestionsElemRaw = suggestionElems
@@ -231,9 +247,9 @@ mainPage w sfwOn nsfwOn names query criterion interval amount
 
     resultElem = showResult query sfwOn nsfwOn criterion interval amount
                             now timezoneOffset
-    staticLinkElem = showStaticLink query sfwOn nsfwOn criterion interval
+    staticLinkElem = showStaticLink query useRegex sfwOn nsfwOn criterion interval
                                     amount
-    bodyLeft = showLeftBody sfwOn nsfwOn criterion interval amount
+    bodyLeft = showLeftBody useRegex sfwOn nsfwOn criterion interval amount
     centerHorizontally : Element -> Element
     centerHorizontally elem = container w (heightOf elem) midTop elem
     contentRaw = flow down [

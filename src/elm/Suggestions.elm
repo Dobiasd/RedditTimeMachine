@@ -10,8 +10,14 @@ maxSuggestions = 10
 overflowIndicator : String
 overflowIndicator = "..."
 
-genSuggestions : Subreddits -> String -> [String]
-genSuggestions names query =
+useRegexDefault : Bool
+useRegexDefault = False
+
+useRegexCheck : Input Bool
+useRegexCheck = input useRegexDefault
+
+genSuggestions : Subreddits -> String -> Bool -> [String]
+genSuggestions names query regexOn =
   let
     allStarting = filter (String.startsWith query . fst) names
     allContaining = filter (containsNotStartsWith query . fst) names

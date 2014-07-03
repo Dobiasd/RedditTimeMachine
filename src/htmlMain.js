@@ -13,11 +13,12 @@ function GetTimezoneOffsetInMinutes() {
   return x.getTimezoneOffset();
 }
 function Init() {
-  lastQuery = getURLParameterDef("subreddit", "");
+  lastQuery = getURLParameterDef("query", "");
   var mainDiv = document.getElementById('main');
   page = Elm.embed(Elm.Main, mainDiv,
                    {query : lastQuery,
                     timezoneOffsetInMinutes : GetTimezoneOffsetInMinutes(),
+                    useRegexInStr : getURLParameterDef("useregex", ""),
                     sfwInStr : getURLParameterDef("sfw", ""),
                     nsfwInStr : getURLParameterDef("nsfw", ""),
                     sortedByInStr : getURLParameterDef("sortedby", ""),

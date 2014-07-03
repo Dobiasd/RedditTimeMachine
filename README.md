@@ -9,6 +9,8 @@ http://www.reddit.com/dev/api
 
 todo:
 
+allow regex
+
 domain reservieren
 
 ausgabe bei monaten und wochen auf jahre aufteilen, bei tagen auf monate
