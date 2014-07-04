@@ -12,7 +12,7 @@ This webpage is not associated with the [official reddit page](http://www.reddit
 It just provides an auxiliary tool to extend the user experience.
 
 Did you also always wonder what reddit was talking about on your birthday 4 years ago? Or did you just remember that you forgot to check reddit on 2007-09-23? Then Reddit Time Machine is just for you! ;-)
-With the build in search function on reddit you have to [manually convert dates to unix timestamps](http://www.reddit.com/r/help/comments/27eziq/view_top_posts_of_a_specific_timespan/) if you want the results you get here. This page lets you generate these links comfortably with just a few clicks.
+With the [built-in search function on reddit](http://www.reddit.com/wiki/search) you have to [manually convert dates to unix timestamps](http://www.reddit.com/r/help/comments/27eziq/view_top_posts_of_a_specific_timespan/) if you want the results you get here. This page lets you generate these links comfortably with just a few clicks.
 
 
 # FAQ
