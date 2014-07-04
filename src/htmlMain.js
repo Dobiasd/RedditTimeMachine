@@ -88,6 +88,6 @@ function SetTitle(name) {
   if (name) {
     subreddit = "/r/" + name;
   }
-  title = "Reddit Time Machine - check out what was up on + " + subreddit + " days/weeks/months ago";
+  title = "Reddit Time Machine - check out what was up on " + subreddit + " days/weeks/months ago";
   document.title = title;
 }
