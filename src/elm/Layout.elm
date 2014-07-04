@@ -6,6 +6,12 @@ spacerSize = 8
 defaultSpacer : Element
 defaultSpacer = spacer spacerSize spacerSize
 
+doubleDefSpacer : Element
+doubleDefSpacer = spacer ( 2 * spacerSize) (2 * spacerSize)
+
+quadDefSpacer : Element
+quadDefSpacer = spacer ( 4 * spacerSize) (4 * spacerSize)
+
 bgColor : Color
 bgColor = lightGray
 

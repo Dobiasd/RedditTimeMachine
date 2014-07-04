@@ -9,7 +9,7 @@ import String
 import Window
 
 import Layout (defaultSpacer, pageWidth, bgColor, toDefText, toSizedText
-             , toSizedTextMod)
+             , toSizedTextMod, doubleDefSpacer, quadDefSpacer)
 import Skeleton (showPage)
 import About (about)
 import Suggestions (genSuggestions, showSuggestion, maxSuggestions
@@ -154,9 +154,10 @@ showTimeSpan transF timezoneOffset (start, end) =
   in
     startStr ++ if endStr /= startStr then " - " ++ endStr else ""
 
-showResult : String -> Bool -> Bool -> Criterion -> Interval -> Int -> Time
-          -> Time -> Element
-showResult rawName sfwOn nsfwOn criterion interval amount now timezoneOffset =
+showResult : Int -> String -> Bool -> Bool -> Criterion -> Interval -> Int
+          -> Time -> Time -> Element
+showResult w rawName sfwOn nsfwOn criterion interval amount now
+           timezoneOffset =
   let
     name = avoidEmptySubredditName rawName
     (lastNFunc, transF) = case interval of
@@ -168,10 +169,33 @@ showResult rawName sfwOn nsfwOn criterion interval amount now timezoneOffset =
     spans = lastNFunc amount now |> filter (validTime . fst)
     urls = map (genLink name criterion) spans
     texts = map (showTimeSpan transF timezoneOffset) spans
+    spanCnt = length spans
+    textSize = if | spanCnt > 113 -> 16
+                  | spanCnt >  93 -> 18
+                  | spanCnt >  33 -> 20
+                  | spanCnt >  13 -> 22
+                  | otherwise     -> 24
   in
     -- todo: use links when this is solved:
     -- https://github.com/elm-lang/Elm/issues/671
-    zipWith (\t url -> toSizedText 16 t |> link url) texts urls |> flow down
+    zipWith (\t url -> toSizedText textSize t |> link url) texts urls
+            |> asColumns w
+
+group : Int -> [a] -> [[a]]
+group n l = case l of
+  [] -> []
+  l -> if | n > 0 -> (take n l) :: (group n (drop n l))
+          | otherwise -> []
+
+asColumns : Int -> [Element] -> Element
+asColumns w elems =
+  let
+    maxW = map widthOf elems |> maximum
+    colCnt = w `div` (maxW + widthOf quadDefSpacer) - 1
+    rowCnt = length elems `div` colCnt + 1
+    rows = group rowCnt elems
+  in
+    map (flow down) rows |> intersperse quadDefSpacer |> flow right
 
 scene : Int -> Bool -> Bool -> Bool -> Subreddits -> String -> Criterion
      -> Interval -> Int -> Time -> Time -> Page -> Element
@@ -234,7 +258,7 @@ mainPage w useRegex sfwOn nsfwOn names query criterion interval amount
     suggestionsElem = suggestionsElemRaw
                       |> container 200 (heightOf suggestionsElemRaw) topLeft
 
-    resultElem = showResult query sfwOn nsfwOn criterion interval amount
+    resultElem = showResult w query sfwOn nsfwOn criterion interval amount
                             now timezoneOffset
     bodyLeft = showLeftBody useRegex sfwOn nsfwOn criterion interval amount
     centerHorizontally : Element -> Element
@@ -243,7 +267,9 @@ mainPage w useRegex sfwOn nsfwOn names query criterion interval amount
                    flow right [
                      bodyLeft
                    , suggestionsElem ] |> centerHorizontally
-                 , resultElem |> centerHorizontally ]
+                 , defaultSpacer
+                 , resultElem |> centerHorizontally
+                 , defaultSpacer ]
     content = contentRaw |> centerHorizontally
   in
     showPage w content

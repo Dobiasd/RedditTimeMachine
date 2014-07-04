@@ -22,6 +22,7 @@ amountDropDown : Amount -> Element
 amountDropDown current =
   let
     f c = (showAmount c, c)
-    all = [10, 20, 50, 100, 200, 500, 1000, 2000, 5000] |> filter (\x -> x /= current)
+    -- more than 1000 results in "too much recursion" for elm
+    all = [10, 20, 50, 100, 200, 500, 1000] |> filter (\x -> x /= current)
   in
     dropDown amountInput.handle <| map f (current :: all)
