@@ -214,9 +214,9 @@ showInputs useRegex sfwOn nsfwOn criterion interval amount =
       , flow right [ toDefText "sfw:"       |> labelSizeF, sfwCheckBox ]
       , flow right [ toDefText "nsfw:"      |> labelSizeF, nsfwCheckBox ]
       , defaultSpacer
-      , flow right [ toDefText "sorted by:" |> labelSizeF, criterionDropDown ]
-      , flow right [ toDefText "interval:"  |> labelSizeF, intervalDropDown ]
-      , flow right [ toDefText "amount:"    |> labelSizeF, amountDropDown ]
+      , flow right [ toDefText "sorted by:" |> labelSizeF, criterionDropDown criterion ]
+      , flow right [ toDefText "interval:"  |> labelSizeF, intervalDropDown interval ]
+      , flow right [ toDefText "amount:"    |> labelSizeF, amountDropDown amount ]
       , defaultSpacer ]
   in
     intersperse defaultSpacer rows |> flow down

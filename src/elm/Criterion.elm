@@ -26,9 +26,11 @@ showCriterion c =
     Top -> "top"
     Comments -> "comments"
 
-criterionDropDown : Element
-criterionDropDown =
+-- todo if issue 670 is resolved, remove the parameter current again
+criterionDropDown : Criterion -> Element
+criterionDropDown current =
   let
     f c = (showCriterion c, c)
+    all = [Top, Hot, Comments, Relevance] |> filter (\x -> x /= current)
   in
-    dropDown criterionInput.handle <| map f [Top, Hot, Comments, Relevance]
+    dropDown criterionInput.handle <| map f (current :: all)

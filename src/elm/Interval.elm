@@ -25,12 +25,14 @@ showInterval c =
     Months -> "months"
     Years -> "years"
 
-intervalDropDown : Element
-intervalDropDown =
+-- todo if issue 670 is resolved, remove the parameter current again
+intervalDropDown : Interval -> Element
+intervalDropDown current =
   let
     f c = (showInterval c, c)
+    all = [Days, Weeks, Months, Years] |> filter (\x -> x /= current)
   in
-    dropDown intervalInput.handle <| map f [Days, Weeks, Months, Years]
+    dropDown intervalInput.handle <| map f (current :: all)
 
 intervalInMs : Interval -> Time
 intervalInMs i =

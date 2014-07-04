@@ -9,6 +9,8 @@ http://www.reddit.com/dev/api
 
 todo:
 
+Why does adsense not accept me? ask at webmasters.stackexchange
+
 ausgabe bei monaten und wochen auf jahre aufteilen, bei tagen auf monate
 Die ist dann soviele spalten breit, wie ins fenster passen
 
@@ -20,6 +22,29 @@ https://github.com/elm-lang/Elm/issues/670
 rollover ueber die suggestions soll nicht haengen bleiben (ganz raus? Dann aber anders als link kennzeichnen. hand mouse cursor?)
 https://github.com/elm-lang/Elm/issues/652
 
-click auf eine suggestion muss den richtigen wert setzen (wenn nicht geht, normalen button verwenden, der hat aber leider nix fettgedrucktes)
-https://groups.google.com/forum/#!topic/elm-discuss/V7frjla1ZoE
-https://github.com/elm-lang/Elm/issues/668
+do not go back beyond start date of reddit
+
+
+
+
+issue 670 workaround:
+    function updateDropDown(node, oldModel, newModel) {
+      var freshNode = renderDropDown(newModel.signal, newModel.values)();
+      while (node.firstChild) {
+        node.removeChild(node.firstChild);
+      }
+      var nodes = freshNode.childNodes;
+      for(var i = 0; i < nodes.length; ++i) {
+        node.appendChild(nodes[i].cloneNode(true));
+      }
+      oldModel = newModel;
+    }
+    function dropDown(signal, values) {
+        return A3(newElement, 100, 24, {
+            ctor: 'Custom',
+            type: 'DropDown',
+            render: renderDropDown(signal,values),
+            update: updateDropDown,
+            model: {signal:signal, values:values}
+        });
+    }

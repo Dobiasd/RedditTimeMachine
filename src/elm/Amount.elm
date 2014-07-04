@@ -17,9 +17,11 @@ readAmount = toIntDef defaultAmount
 showAmount : Amount -> String
 showAmount = show
 
-amountDropDown : Element
-amountDropDown =
+-- todo if issue 670 is resolved, remove the parameter current again
+amountDropDown : Amount -> Element
+amountDropDown current =
   let
     f c = (showAmount c, c)
+    all = [10, 20, 50, 100, 200, 500, 1000, 2000, 5000] |> filter (\x -> x /= current)
   in
-    dropDown amountInput.handle <| map f [10, 20, 50, 100, 200, 500, 1000]
+    dropDown amountInput.handle <| map f (current :: all)
