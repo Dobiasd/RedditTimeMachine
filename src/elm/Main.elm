@@ -191,11 +191,15 @@ asColumns : Int -> [Element] -> Element
 asColumns w elems =
   let
     maxW = map widthOf elems |> maximum
-    colCnt = w `div` (maxW + widthOf quadDefSpacer) - 1
+    colCnt = w `div` (maxW + 2 * widthOf quadDefSpacer + 2) |> max 1
     rowCnt = length elems `div` colCnt + 1
     rows = group rowCnt elems
+    cols = map (flow down) rows
+    maxH = map heightOf cols |> maximum
+    colSpacer = spacer 2 maxH |> color lightBlue
+    paddedColSpacer = flow right [ quadDefSpacer, colSpacer, quadDefSpacer ]
   in
-    map (flow down) rows |> intersperse quadDefSpacer |> flow right
+    map (flow down) rows |> intersperse paddedColSpacer |> flow right
 
 scene : Int -> Bool -> Bool -> Bool -> Subreddits -> String -> Criterion
      -> Interval -> Int -> Time -> Time -> Page -> Element
