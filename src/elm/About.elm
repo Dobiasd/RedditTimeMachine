@@ -21,7 +21,7 @@ With the build in search function on reddit you have to [manually convert dates 
 This page was mostly written in [Elm](http://elm-lang.org), an awesome [pure functional](http://en.wikipedia.org/wiki/Functional_programming) [Haskell](http://www.haskell.org)-like programming language that compiles to Javascript.
 
 ## Can you show me the source code?
-Sure! Here it is: (github/Dobiasd/RedditTimeMachine)[https://github.com/Dobiasd/RedditTimeMachine]
+Sure! Here it is: [github/Dobiasd/RedditTimeMachine](https://github.com/Dobiasd/RedditTimeMachine)
 But I warn you, there are still some todos to finish and issues to correct.
 
 
