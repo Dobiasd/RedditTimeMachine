@@ -1,15 +1,11 @@
-# Reddit Time Machine
-## check out what was up on reddit days/weeks/months ago
-online at: [http://www.reddittimemachine.com](http://www.reddittimemachine.com)
+# [Reddit Time Machine](http://www.reddittimemachine.com)
+## Check out what was up on reddit days/weeks/months ago.
 
+Did you also always wonder what reddit was talking about on your birthday 4 years ago? Or did you just remember that you forgot to check reddit on 2007-09-23? Then [Reddit Time Machine](http://www.reddittimemachine.com) is just for you! ;-)
 
-
-http://www.reddit.com/r/help/comments/27eziq/view_top_posts_of_a_specific_timespan/
-
-
+origin: http://www.reddit.com/r/help/comments/27eziq/view_top_posts_of_a_specific_timespan/
 
 todo:
-
-Why does adsense not accept me? ask at webmasters.stackexchange
-
-code clean up und comments
+- adsense
+- code clean up und comments
+- post on /r/webdev and /r/elm

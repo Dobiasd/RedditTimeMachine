@@ -27,7 +27,9 @@ shareIcons =
       , ( image iconSize iconSize "imgs/twitter.png", "https://twitter.com/home?status=Check%20out%20what%20was%20up%20on%20reddit%20days/weeks/months%20ago%20at%20http://www.reddittimemachine.com" )
       , ( image iconSize iconSize "imgs/googleplus.png", "https://plus.google.com/share?url=http://www.reddittimemachine.com" )
       , ( image iconSize iconSize "imgs/linkedin.png", "https://www.linkedin.com/shareArticle?mini=true&url=http://www.reddittimemachine.com&title=Reddit%20Time%20Machine&summary=Check%20out%20what%20was%20up%20on%20reddit%20days/weeks/months%20ago.&source=" )
-      , ( image iconSize iconSize "imgs/pinterest.png", "https://pinterest.com/pin/create/button/?url=&media=http://www.reddittimemachine.com&description=Check%20out%20what%20was%20up%20on%20reddit%20days/weeks/months%20ago." ) ]
+      , ( image iconSize iconSize "imgs/pinterest.png", "https://pinterest.com/pin/create/button/?url=&media=http://www.reddittimemachine.com&description=Check%20out%20what%20was%20up%20on%20reddit%20days/weeks/months%20ago." )
+      , ( image iconSize iconSize "imgs/digg.png", "http://digg.com/submit?phase=2&url=http://www.reddittimemachine.com&title=Check%20out%20what%20was%20up%20on%20reddit%20days/weeks/months%20ago." )
+      , ( image iconSize iconSize "imgs/stumbleupon.png", "http://www.stumbleupon.com/submit?url=http://www.reddittimemachine.com&title=Check%20out%20what%20was%20up%20on%20reddit%20days/weeks/months%20ago." ) ]
       |> map (\ (img, url) -> customButton clicks.handle () img img img |> link url)
   in
     toDefText "share: " :: buttons |> intersperse (defaultSpacer) |> flow right
