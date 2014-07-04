@@ -16,13 +16,6 @@ Die ist dann soviele spalten breit, wie ins fenster passen
 
 code clean up und comments
 
-dropDowns muessen von den statischen links auch gesetzt werden
-https://github.com/elm-lang/Elm/issues/670
-
-rollover ueber die suggestions soll nicht haengen bleiben (ganz raus? Dann aber anders als link kennzeichnen. hand mouse cursor?)
-https://github.com/elm-lang/Elm/issues/652
-
-do not go back beyond start date of reddit
 
 
 

@@ -42,7 +42,7 @@ containsNotStartsWith a b = String.contains a b && not (String.startsWith a b)
 
 showSubscriberCnt : Int -> Element
 showSubscriberCnt i = "  " ++ show i |> toText |> Text.height 12
-                                      |> Text.color darkGray |> leftAligned
+                                     |> Text.color darkGray |> leftAligned
 
 showSuggestion : String -> Subreddit -> Element
 showSuggestion query ((s, i) as sr) =
@@ -69,7 +69,10 @@ suggButton elem s =
     elemHover = elem |> color lightBlue
     elemClick = elem |> color lightGreen
   in
-    customButton suggestionClick.handle s elem elemHover elemClick
+    -- todo use elemHover and elemClick again if this is solved:
+    -- https://github.com/elm-lang/Elm/issues/652
+    -- customButton suggestionClick.handle s elem elemHover elemClick
+    customButton suggestionClick.handle s elem elem elem
     --button suggestionClick.handle s s
 
 showSuggestionNonEmptyQuery : String -> Subreddit -> Int -> Element
