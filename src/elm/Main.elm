@@ -51,6 +51,9 @@ port sortedByInStr : Signal String
 port intervalInStr : Signal String
 port amountInStr : Signal String
 
+port staticLinkOut : Signal String
+port staticLinkOut = genStaticLink <~ query ~ useRegex ~ sfwOn ~ nsfwOn ~ criterion ~ interval ~ amount
+
 port selected : Signal String
 port selected = suggestionClick.signal
 
@@ -124,7 +127,7 @@ staticLink base parameters =
 genStaticLink : String -> Bool -> Bool -> Bool -> Criterion -> Interval
              -> Int -> String
 genStaticLink query useRegex sfwOn nsfwOn criterion interval amount =
-  staticLink "http://www.reddittimemachine.com/index.html"
+  staticLink ""
     [ ("query", query)
     , ("useregex", showBool useRegex)
     , ("sfw", showBool sfwOn)
@@ -138,21 +141,6 @@ notEmptyOr def s = if String.isEmpty s then def else s
 
 avoidEmptySubredditName : String -> String
 avoidEmptySubredditName = notEmptyOr "all"
-
-showStaticLink : String -> Bool -> Bool -> Bool -> Criterion -> Interval
-              -> Int -> Element
-showStaticLink query useRegex sfwOn nsfwOn criterion interval amount =
-  let
-    url = genStaticLink query useRegex sfwOn nsfwOn criterion interval amount
-  in
-    flow right [ toSizedText 16 "static link to this list: "
-                 -- todo: use link
-                 -- using link here results in:
-                 -- "TypeError: e.lastNode is undefined"
-                 -- https://github.com/elm-lang/Elm/issues/671
-                 -- (see also in showResult)
-               , toSizedTextMod (line Under) 14 url |> link url
-               ]
 
 showTimeSpan : (String -> String) -> Time -> (Time, Time) -> String
 showTimeSpan transF timezoneOffset (start, end) =
@@ -182,13 +170,12 @@ showResult rawName sfwOn nsfwOn criterion interval amount now timezoneOffset =
   in
     -- todo: use links when this is solved:
     -- https://github.com/elm-lang/Elm/issues/671
-    -- (see also in showStaticLink)
     zipWith (\t url -> toSizedText 16 t |> link url) texts urls |> flow down
 
 scene : Int -> Bool -> Bool -> Bool -> Subreddits -> String -> Criterion
      -> Interval -> Int -> Time -> Time -> Page -> Element
 scene w regexOn sfwOn nsfwOn names query criterion interval amount
-      now timezoneOffset page  =
+      now timezoneOffset page =
   case page of
     MainPage -> mainPage w regexOn sfwOn nsfwOn names query criterion interval amount
                 now timezoneOffset
@@ -248,8 +235,6 @@ mainPage w useRegex sfwOn nsfwOn names query criterion interval amount
 
     resultElem = showResult query sfwOn nsfwOn criterion interval amount
                             now timezoneOffset
-    staticLinkElem = showStaticLink query useRegex sfwOn nsfwOn criterion interval
-                                    amount
     bodyLeft = showLeftBody useRegex sfwOn nsfwOn criterion interval amount
     centerHorizontally : Element -> Element
     centerHorizontally elem = container w (heightOf elem) midTop elem
@@ -257,8 +242,7 @@ mainPage w useRegex sfwOn nsfwOn names query criterion interval amount
                    flow right [
                      bodyLeft
                    , suggestionsElem ] |> centerHorizontally
-                 , resultElem |> centerHorizontally
-                 , staticLinkElem |> centerHorizontally ]
+                 , resultElem |> centerHorizontally ]
     content = contentRaw |> centerHorizontally
   in
     showPage w content

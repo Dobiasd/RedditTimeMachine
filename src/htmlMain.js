@@ -28,7 +28,11 @@ function Init() {
   ShowQuery(true);
   page.ports.selected.subscribe(Selected);
   page.ports.showQuery.subscribe(ShowQuery);
+  page.ports.staticLinkOut.subscribe(SetUrl);
   setInterval(CheckQuery, 100);
+}
+function SetUrl(url) {
+  history.replaceState({}, "Reddit Time Machine", url);
 }
 function CheckQuery() {
   queryElem = document.getElementById("queryField");
