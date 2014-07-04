@@ -60,6 +60,12 @@ port selected = suggestionClick.signal
 port showQuery : Signal Bool
 port showQuery = (\x -> x == MainPage) <~ currentPage
 
+port isQuerySurelyFound : Signal Bool
+port isQuerySurelyFound =
+  let
+    f srs q = String.isEmpty q || any (\x -> x == q) (map fst srs)
+  in f <~ subreddits ~ query
+
 now : Signal Time
 now = every minute
 

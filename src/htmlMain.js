@@ -29,6 +29,8 @@ function Init() {
   page.ports.selected.subscribe(Selected);
   page.ports.showQuery.subscribe(ShowQuery);
   page.ports.staticLinkOut.subscribe(SetUrl);
+  page.ports.isQuerySurelyFound.subscribe(FoundQuery);
+
   setInterval(CheckQuery, 100);
 }
 function SetUrl(url) {
@@ -63,6 +65,7 @@ function ShowQuery(on) {
     if (lastQuery)
       input.value = lastQuery;
     input.focus();
+    input.select();
   }
   else
   {
@@ -70,6 +73,14 @@ function ShowQuery(on) {
     if (!elem)
       return;
     elem.remove();
+  }
+}
+function FoundQuery(val) {
+  var queryElem = document.getElementById("queryField");
+  if (val) {
+    queryElem.style.backgroundColor = "PaleGreen";
+  } else {
+    queryElem.style.backgroundColor = "LightYellow";
   }
 }
 function SetTitle(name) {
