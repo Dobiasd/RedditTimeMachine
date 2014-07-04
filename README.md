@@ -12,7 +12,4 @@ todo:
 
 Why does adsense not accept me? ask at webmasters.stackexchange
 
-ausgabe bei monaten und wochen auf jahre aufteilen, bei tagen auf monate
-Die ist dann soviele spalten breit, wie ins fenster passen
-
 code clean up und comments
