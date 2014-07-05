@@ -23,9 +23,11 @@ function Init() {
                     nsfwInStr : getURLParameterDef("nsfw", ""),
                     sortedByInStr : getURLParameterDef("sortedby", ""),
                     intervalInStr : getURLParameterDef("interval", ""),
-                    amountInStr : getURLParameterDef("amount", "")});
+                    amountInStr : getURLParameterDef("amount", ""),
+                    pageInStr : ""});
 
-  ShowQuery(true);
+  // Page is not set immediatly but send later, to fire the signal in Elm.
+  page.ports.pageInStr.send(getURLParameterDef("page", ""));
   page.ports.selected.subscribe(Selected);
   page.ports.showQuery.subscribe(ShowQuery);
   page.ports.staticLinkOut.subscribe(SetUrl);

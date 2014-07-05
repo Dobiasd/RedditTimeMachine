@@ -22,7 +22,18 @@ footer w =
 pageClick : Input Page
 pageClick = input MainPage
 
-data Page = MainPage | AboutPage
+defaultPage : Page
+defaultPage = MainPage
 
-currentPage : Signal Page
-currentPage = pageClick.signal
+readPage : String -> Page
+readPage s = if | s == "home" -> MainPage
+                | s == "about" -> AboutPage
+                | otherwise -> MainPage
+
+showPageName : Page -> String
+showPageName p =
+  case p of
+    MainPage -> "home"
+    AboutPage -> "about"
+
+data Page = MainPage | AboutPage

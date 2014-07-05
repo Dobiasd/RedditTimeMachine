@@ -15,7 +15,7 @@ import About (about)
 import Suggestions (genSuggestions, showSuggestion, maxSuggestions
                   , overflowIndicator, Subreddits, subreddits, suggestionClick
                   , toIntDef, useRegexCheck, useRegexDefault)
-import Footer (currentPage, MainPage, AboutPage, Page)
+import Footer (pageClick, readPage, showPageName, MainPage, AboutPage, Page)
 import DateTools (lastNDaySpans, showDateAsInts, timeToDateAsInts
                 , lastNWeekSpans, lastNMonthsSpans, lastNYearsSpans)
 import Amount (showAmount, amountDropDown, Amount, amount, readAmount
@@ -50,9 +50,13 @@ port nsfwInStr : Signal String
 port sortedByInStr : Signal String
 port intervalInStr : Signal String
 port amountInStr : Signal String
+port pageInStr : Signal String
+
+currentPage : Signal Page
+currentPage = merge (readPage <~ pageInStr) pageClick.signal
 
 port staticLinkOut : Signal String
-port staticLinkOut = genStaticLink <~ query ~ useRegex ~ sfwOn ~ nsfwOn ~ criterion ~ interval ~ amount
+port staticLinkOut = genStaticLink <~ query ~ useRegex ~ sfwOn ~ nsfwOn ~ criterion ~ interval ~ amount ~ currentPage
 
 port selected : Signal String
 port selected = suggestionClick.signal
@@ -137,8 +141,8 @@ staticLink base parameters =
     base ++ (if String.isEmpty addon then "" else "?" ++ addon)
 
 genStaticLink : String -> Bool -> Bool -> Bool -> Criterion -> Interval
-             -> Int -> String
-genStaticLink query useRegex sfwOn nsfwOn criterion interval amount =
+             -> Int -> Page -> String
+genStaticLink query useRegex sfwOn nsfwOn criterion interval amount page =
   staticLink ""
     [ ("query", query)
     , ("useregex", showBool useRegex)
@@ -146,7 +150,8 @@ genStaticLink query useRegex sfwOn nsfwOn criterion interval amount =
     , ("nsfw", showBool nsfwOn)
     , ("sortedby", showCriterion criterion)
     , ("interval", showInterval interval)
-    , ("amount", showAmount amount) ]
+    , ("amount", showAmount amount)
+    , ("page", showPageName page) ]
 
 notEmptyOr : String -> String -> String
 notEmptyOr def s = if String.isEmpty s then def else s
