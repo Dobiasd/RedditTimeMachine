@@ -36,6 +36,7 @@ function Init() {
   page.ports.pageInStr.send(getURLParameterDef("page", ""));
 
   var queryElem = document.getElementById("queryField");
+  queryElem.value = query;
   queryElem.focus();
   queryElem.select();
 
