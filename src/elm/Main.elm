@@ -60,10 +60,16 @@ port selected = suggestionClick.signal
 port showQuery : Signal Bool
 port showQuery = (\x -> x == MainPage) <~ currentPage
 
-port isQuerySurelyFound : Signal Bool
-port isQuerySurelyFound =
+port queryColor : Signal String
+port queryColor =
+  (\b -> if b then "PaleGreen" else "LightYellow") <~ isQuerySurelyFound
+
+isQuerySurelyFound : Signal Bool
+isQuerySurelyFound =
   let
-    f srs q = String.isEmpty q || any (\x -> x == q) (map fst srs)
+    f srs q = String.isEmpty q
+              || q == "all"
+              || any (\x -> x == q) (map fst srs)
   in f <~ subreddits ~ query
 
 now : Signal Time

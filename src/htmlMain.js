@@ -3,7 +3,7 @@ function getURLParameter(name) {
   return decodeURIComponent((new RegExp('[?|&]' + name + '=' + '([^&;]+?)(&|#|;|$)').exec(location.search)||[,""])[1].replace(/\+/g, '%20'))||null
 }
 function getURLParameterDef(name, def) {
-  val = getURLParameter(name);
+  var val = getURLParameter(name);
   if (val)
     return val;
   return def;
@@ -29,7 +29,7 @@ function Init() {
   page.ports.selected.subscribe(Selected);
   page.ports.showQuery.subscribe(ShowQuery);
   page.ports.staticLinkOut.subscribe(SetUrl);
-  page.ports.isQuerySurelyFound.subscribe(FoundQuery);
+  page.ports.queryColor.subscribe(SetQueryColor);
 
   setInterval(CheckQuery, 100);
 }
@@ -37,10 +37,10 @@ function SetUrl(url) {
   history.replaceState({}, "Reddit Time Machine", url);
 }
 function CheckQuery() {
-  queryElem = document.getElementById("queryField");
+  var queryElem = document.getElementById("queryField");
   if (!queryElem)
     return;
-  query = queryElem.value;
+  var query = queryElem.value;
   if (query != lastQuery) {
     lastQuery = query;
     page.ports.timezoneOffsetInMinutes.send(GetTimezoneOffsetInMinutes());
@@ -69,25 +69,23 @@ function ShowQuery(on) {
   }
   else
   {
-    elem = document.getElementById("queryField");
+    var elem = document.getElementById("queryField");
     if (!elem)
       return;
     elem.remove();
   }
 }
-function FoundQuery(val) {
+function SetQueryColor(col) {
   var queryElem = document.getElementById("queryField");
-  if (val) {
-    queryElem.style.backgroundColor = "PaleGreen";
-  } else {
-    queryElem.style.backgroundColor = "LightYellow";
-  }
+  if (!queryElem)
+    return;
+  queryElem.style.backgroundColor = col;
 }
 function SetTitle(name) {
-  subreddit = "reddit";
+  var subreddit = "reddit";
   if (name) {
     subreddit = "/r/" + name;
   }
-  title = "Reddit Time Machine - check out what was up on " + subreddit + " days/weeks/months ago";
+  var title = "Reddit Time Machine - check out what was up on " + subreddit + " days/weeks/months ago";
   document.title = title;
 }
