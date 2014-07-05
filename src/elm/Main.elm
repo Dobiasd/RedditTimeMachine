@@ -198,7 +198,7 @@ asColumns w elems =
   let
     maxW = map widthOf elems |> maximum
     colCnt = w `div` (maxW + 2 * widthOf quadDefSpacer + 2) |> max 1
-    rowCnt = length elems `div` colCnt + 1
+    rowCnt = length elems `div` colCnt + 1 |> max 5
     rows = group rowCnt elems
     cols = map (flow down) rows
     maxH = map heightOf cols |> maximum
