@@ -8,9 +8,14 @@ With the [built-in search function on reddit](http://www.reddit.com/wiki/search)
 
 ![timeline](src/imgs/timeline.png)
 
+
+
+
+
+
+
 todo:
-- better explanation (with image) on about page and in this readme
-- advertising
+- ads
 - code clean up und comments
 - post on /r/webdev and /r/elm
 - wait for issues to be fixed or find cleaner workarounds
