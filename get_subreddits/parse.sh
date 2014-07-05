@@ -1,6 +1,4 @@
 function parse {
-    mkdir $1
-
     rm temp_list.txt
     grep -r $1 -e '.*' | grep -e "reddit.com\/r\/" | grep -v "%" | perl -pe 's/.*reddit.com.r.[^\/]*\/"\>([^\<]*).............([0-9]*).*/ , "\1,\2"/g' >> temp_list.txt
 
