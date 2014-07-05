@@ -5,7 +5,7 @@ import Graphics.Input (Input, input, dropDown)
 data Interval = Days | Weeks | Months | Years
 
 defaultInterval : Interval
-defaultInterval = Weeks
+defaultInterval = Months
 
 intervalInput : Input Interval
 intervalInput = input defaultInterval
