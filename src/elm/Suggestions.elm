@@ -40,9 +40,16 @@ genSuggestionsString srs query =
 containsNotStartsWith : String -> String -> Bool
 containsNotStartsWith a b = String.contains a b && not (String.startsWith a b)
 
+subscriberCntToStr : Int -> String
+subscriberCntToStr i =
+  if | i > 1000000000 -> show (i `div` 1000000000) ++ "G"
+     | i >    1000000 -> show (i `div`    1000000) ++ "M"
+     | i >       1000 -> show (i `div`       1000) ++ "k"
+     | otherwise      -> show i
+
 showSubscriberCnt : Int -> Element
-showSubscriberCnt i = "  " ++ show i |> toText |> Text.height 12
-                                     |> Text.color darkGray |> leftAligned
+showSubscriberCnt i = "  " ++ subscriberCntToStr i |> toText |> Text.height 12
+                              |> Text.color darkGray |> leftAligned
 
 showSuggestion : String -> Subreddit -> Element
 showSuggestion query ((s, i) as sr) =
