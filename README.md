@@ -1,6 +1,8 @@
 # [Reddit Time Machine](http://www.reddittimemachine.com)
-## Check out what was up on reddit days/weeks/months ago.
 
+![logo](src/imgs/snoo.png)
+
+## Check out what was up on reddit days/weeks/months ago.
 
 Did you also always wonder what reddit was talking about on your birthday 4 years ago? Or did you just remember that you forgot to check reddit on 2007-09-23? Then [Reddit Time Machine](http://www.reddittimemachine.com) is just for you! ;-)
 
