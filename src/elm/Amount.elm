@@ -17,7 +17,8 @@ readAmount = toIntDef defaultAmount
 showAmount : Amount -> String
 showAmount = show
 
--- todo if issue 670 is resolved, remove the parameter current again
+-- todo: If issue 670 is resolved, remove the parameter current again.
+--       https://github.com/elm-lang/Elm/issues/670
 amountDropDown : Amount -> Element
 amountDropDown current =
   let

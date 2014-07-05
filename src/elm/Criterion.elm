@@ -26,7 +26,8 @@ showCriterion c =
     Top -> "top"
     Comments -> "comments"
 
--- todo if issue 670 is resolved, remove the parameter current again
+-- todo: If issue 670 is resolved, remove the parameter current again.
+--       https://github.com/elm-lang/Elm/issues/670
 criterionDropDown : Criterion -> Element
 criterionDropDown current =
   let

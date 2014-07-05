@@ -182,7 +182,8 @@ showResult w rawName sfwOn nsfwOn criterion interval amount now
       Weeks -> (lastNWeekSpans, id)
       Months -> (lastNMonthsSpans, String.dropRight 3)
       Years -> (lastNYearsSpans, String.dropRight 6)
-    validTime x = x > 1114905600*second - 12*60*60*second -- 2005-05-01 minus 12 hours
+    -- 2005-05-01 minus 12 hours
+    validTime x = x > 1114905600*second - 12*60*60*second
     spans = lastNFunc amount now |> filter (validTime . snd)
     urls = map (genLink name criterion) spans
     texts = map (showTimeSpan transF timezoneOffset) spans
@@ -193,8 +194,6 @@ showResult w rawName sfwOn nsfwOn criterion interval amount now
                   | spanCnt >  13 -> 22
                   | otherwise     -> 24
   in
-    -- todo: use links when this is solved:
-    -- https://github.com/elm-lang/Elm/issues/671
     zipWith (\t url -> toSizedText textSize t |> link url) texts urls
             |> asColumns w
 

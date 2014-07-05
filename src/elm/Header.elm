@@ -17,7 +17,7 @@ logoWidth = 120
 clicks : Input ()
 clicks = input ()
 
--- images as hyperlinks do not work
+-- Images as hyperlinks do not work, so customButton is used.
 -- https://groups.google.com/forum/#!topic/elm-discuss/K5tHTGDbLLk
 shareIcons : Element
 shareIcons =
@@ -43,9 +43,6 @@ topBar w =
             , flow right [ shareIcons, defaultSpacer ]
               |> container w (heightOf shareIcons) topRight
             , defaultSpacer ] |> color lightBlue
-
--- todo remove
---header _ = spacer 10 10 |> color black
 
 header : Int -> Element
 header w =

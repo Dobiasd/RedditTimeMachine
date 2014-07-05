@@ -59,7 +59,7 @@ showSuggestion query ((s, i) as sr) =
     dummy = spacer 0 0 |> color white
   in
     if emptyQuery || isEmpty idxs
-      -- todo: remove dummies after this is fixed:
+      -- todo: Remove dummies when issue 672 is fixed:
       -- https://github.com/elm-lang/Elm/issues/672
       then suggButton (flow right [showSuggPart id black s
                                  , dummy
@@ -76,11 +76,10 @@ suggButton elem s =
     elemHover = elem |> color lightBlue
     elemClick = elem |> color lightGreen
   in
-    -- todo use elemHover and elemClick again if this is solved:
+    -- todo: Use elemHover and elemClick again when issue 652 is solved:
     -- https://github.com/elm-lang/Elm/issues/652
     -- customButton suggestionClick.handle s elem elemHover elemClick
     customButton suggestionClick.handle s elem elem elem
-    --button suggestionClick.handle s s
 
 showSuggestionNonEmptyQuery : String -> Subreddit -> Int -> Element
 showSuggestionNonEmptyQuery query (s, i) idx =

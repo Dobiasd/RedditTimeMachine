@@ -1,4 +1,4 @@
 get_subreddits/sfw
 get_subreddits/nsfw
-get_subreddits/sfw.elm
-get_subreddits/nsfw.elm
+get_subreddits/Sfw.elm
+get_subreddits/Nsfw.elm

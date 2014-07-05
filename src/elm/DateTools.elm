@@ -4,7 +4,6 @@ import Date
 
 import Interval(Interval, Days, Weeks, Months, Years)
 
-
 -- (start, end)
 type TimeSpan = (Time, Time)
 
@@ -172,7 +171,7 @@ dateAsIntsToTime : DateAsInts -> Time
 dateAsIntsToTime = Date.toTime . readDate . showDateAsInts
 
 showDateAsInts : DateAsInts -> String
-showDateAsInts intDate = 
+showDateAsInts intDate =
   let
     pad = String.padLeft 2 '0'
     yearStr = show intDate.year

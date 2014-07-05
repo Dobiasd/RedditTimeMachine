@@ -1,13 +1,3 @@
-#ads {
-  width: 728px;
-  height: 90px;
-  margin: 4px;
-  background: #99ccee;
-  display: block;
-  margin-left: auto;
-  margin-right: auto;
-}
-
 #query {
   top: 100px;
   width: 200px;
@@ -18,15 +8,12 @@
 
 #queryField {
   /* http://stackoverflow.com/questions/5967758 */
-  position:    absolute;
-  /* top:         295px; */ /* with adds */
-  top:         205px; /* without adds */
-  left:        50%;    /* Move the left edge to the center. */
+  position:     absolute;
+  /* top:          295px; */ /* with adds */
+  top:          205px; /* without adds */
+  left:         50%;    /* Move the left edge to the center. */
   margin-left: -220px; /* And move it a bit to the left again. */
-  z-index:     9999;   /* Try to get it on top. */
-  width:       220px;
-  font-size:   18px;
-}
-
-#main {
+  z-index:      9999;   /* Try to get it on top. */
+  width:        220px;
+  font-size:    18px;
 }
