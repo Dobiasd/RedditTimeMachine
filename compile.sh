@@ -49,6 +49,7 @@ done
 
 cp ./src/index.html ./build/index.html
 uglifyjs ./src/htmlMain.js > ./build/js/htmlMain.js
+#cp ./src/htmlMain.js ./build/js/htmlMain.js
 yui-compressor ./src/style.css > ./build/style.css
 
 rm -r ./build/src

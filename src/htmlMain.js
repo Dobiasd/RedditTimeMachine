@@ -13,10 +13,11 @@ function GetTimezoneOffsetInMinutes() {
   return x.getTimezoneOffset();
 }
 function Init() {
-  lastQuery = getURLParameterDef("query", "");
+  lastQuery = ""
+  var query = getURLParameterDef("query", "");
   var mainDiv = document.getElementById('main');
   page = Elm.embed(Elm.Main, mainDiv,
-                   {query : lastQuery,
+                   {query : query,
                     timezoneOffsetInMinutes : GetTimezoneOffsetInMinutes(),
                     useRegexInStr : getURLParameterDef("useregex", ""),
                     sfwInStr : getURLParameterDef("sfw", ""),
@@ -24,14 +25,16 @@ function Init() {
                     sortedByInStr : getURLParameterDef("sortedby", ""),
                     intervalInStr : getURLParameterDef("interval", ""),
                     amountInStr : getURLParameterDef("amount", ""),
-                    pageInStr : ""});
+                    pageInStr : getURLParameterDef("page", "")});
 
-  // Page is not set immediatly but send later, to fire the signal in Elm.
-  page.ports.pageInStr.send(getURLParameterDef("page", ""));
   page.ports.selected.subscribe(Selected);
   page.ports.showQuery.subscribe(ShowQuery);
   page.ports.staticLinkOut.subscribe(SetUrl);
   page.ports.queryColor.subscribe(SetQueryColor);
+
+  var queryElem = document.getElementById("queryField");
+  queryElem.focus();
+  queryElem.select();
 
   setInterval(CheckQuery, 100);
 }
@@ -55,26 +58,12 @@ function Selected(name) {
   SetTitle(name);
 }
 function ShowQuery(on) {
+  var queryElem = document.getElementById("queryField");
   if (on) {
-    if (document.getElementById("queryField"))
-      return;
-    var input = document.createElement("input");
-    input.type = "text";
-    var queryDiv = document.getElementById('query');
-    input.placeholder = "enter subreddit"
-    input.id = "queryField";
-    queryDiv.appendChild(input);
-    if (lastQuery)
-      input.value = lastQuery;
-    input.focus();
-    input.select();
-  }
-  else
-  {
-    var elem = document.getElementById("queryField");
-    if (!elem)
-      return;
-    elem.remove();
+    queryElem.style.visibility='visible';
+    queryElem.focus();
+  } else {
+    queryElem.style.visibility='hidden';
   }
 }
 function SetQueryColor(col) {
