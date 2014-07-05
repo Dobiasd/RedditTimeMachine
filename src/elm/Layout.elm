@@ -25,5 +25,12 @@ toSizedTextMod : (Text -> Text) -> Float -> String -> Element
 toSizedTextMod f s =
   leftAligned . Text.color black . Text.height s . f . toText
 
+toColText : Color -> String -> Element
+toColText c =
+  leftAligned . Text.color c . Text.height defTextSize . toText
+
+defTextSize : Float
+defTextSize = 20
+
 toDefText : String -> Element
-toDefText = toSizedText 20
+toDefText = toSizedText defTextSize
