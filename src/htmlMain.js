@@ -32,6 +32,9 @@ function Init() {
   page.ports.staticLinkOut.subscribe(SetUrl);
   page.ports.queryColor.subscribe(SetQueryColor);
 
+  // Send page to trigger signal in Elm.
+  page.ports.pageInStr.send(getURLParameterDef("page", ""));
+
   var queryElem = document.getElementById("queryField");
   queryElem.focus();
   queryElem.select();
