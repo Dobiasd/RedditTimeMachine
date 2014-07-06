@@ -1,6 +1,6 @@
 module Main where
 
-import Graphics.Input (Input, input, dropDown, checkbox)
+import Graphics.Input (Input, input, dropDown, checkbox, customButton)
 import Graphics.Input
 import Graphics.Input.Field as Field
 import Date
@@ -9,7 +9,7 @@ import String
 import Window
 
 import Layout (defaultSpacer, pageWidth, bgColor, toDefText, toSizedText
-             , toSizedTextMod, doubleDefSpacer, quadDefSpacer)
+             , toSizedTextMod, doubleDefSpacer, quadDefSpacer, defTextSize)
 import Skeleton (showPage)
 import About (about)
 import Suggestions (genSuggestions, showSuggestion, maxSuggestions
@@ -79,6 +79,9 @@ isQuerySurelyFound =
 now : Signal Time
 now = every minute
 
+goBackFrom : Signal Time
+goBackFrom = merges [constant 0, nearerClick.signal, furtherClick.signal]
+
 timezoneOffset : Signal Time
 timezoneOffset = (\x -> toFloat x * minute)
                    <~ (dropRepeats timezoneOffsetInMinutes)
@@ -120,6 +123,7 @@ main = scene <~ (dropRepeats Window.width)
               ~ interval
               ~ amount
               ~ now
+              ~ goBackFrom
               ~ timezoneOffset
               ~ currentPage
 
@@ -171,9 +175,15 @@ showTimeSpan transF timezoneOffset (start, end) =
   in
     startStr ++ if endStr /= startStr then " - " ++ endStr else ""
 
+nearerClick : Input Time
+nearerClick = input 0
+
+furtherClick : Input Time
+furtherClick = input 0
+
 showResult : Int -> String -> Bool -> Bool -> Criterion -> Interval -> Int
-          -> Time -> Time -> Element
-showResult w rawName sfwOn nsfwOn criterion interval amount now
+          -> Time -> Time -> Time -> Element
+showResult w rawName sfwOn nsfwOn criterion interval amount now goBackFromRaw
            timezoneOffset =
   let
     name = avoidEmptySubredditName rawName
@@ -184,7 +194,9 @@ showResult w rawName sfwOn nsfwOn criterion interval amount now
       Years -> (lastNYearsSpans, String.dropRight 6)
     -- 2005-05-01 minus 12 hours
     validTime x = x > 1114905600*second - 12*60*60*second
-    spans = lastNFunc amount now |> filter (validTime . snd)
+    goBackFrom = (if validTime goBackFromRaw then goBackFromRaw else now)
+                 |> min now
+    spans = lastNFunc amount goBackFrom |> filter (validTime . snd)
     urls = map (genLink name criterion) spans
     texts = map (showTimeSpan transF timezoneOffset) spans
     spanCnt = length spans
@@ -193,9 +205,27 @@ showResult w rawName sfwOn nsfwOn criterion interval amount now
                   | spanCnt >  33 -> 20
                   | spanCnt >  13 -> 22
                   | otherwise     -> 24
+    linkElems = zipWith (\t url -> toSizedText textSize t |> link url) texts urls
+    nearerPossible = firstSeenEnd <= now
+    furtherPossible = length spans >= amount
+    toDefTextCentered t = toDefText t |> container (widthOf columnElem) (round defTextSize) midTop
+    nearerElem = toDefTextCentered "... ^^^ ..."
+    furtherElem = toDefTextCentered "... vvv ..."
+    firstSeenStart = head spans |> fst
+    firstSeenEnd = head spans |> snd
+    lastSeen = last spans |> fst
+    seenSpan = firstSeenEnd - lastSeen
+    oneSpan = firstSeenEnd - firstSeenStart
+    nearerButton = customButton nearerClick.handle (firstSeenStart + seenSpan - (oneSpan/2))
+                                nearerElem nearerElem nearerElem
+    furtherButton = customButton furtherClick.handle lastSeen
+                                 furtherElem furtherElem furtherElem
+    noTimeBtnSpacer = spacer 0 textSize |> color white
+    columnElem = linkElems |> asColumns w
   in
-    zipWith (\t url -> toSizedText textSize t |> link url) texts urls
-            |> asColumns w
+    flow down [ if nearerPossible then nearerButton else noTimeBtnSpacer
+              , columnElem
+              , if furtherPossible then furtherButton else noTimeBtnSpacer ]
 
 group : Int -> [a] -> [[a]]
 group n l = case l of
@@ -218,12 +248,12 @@ asColumns w elems =
     map (flow down) rows |> intersperse paddedColSpacer |> flow right
 
 scene : Int -> Bool -> Bool -> Bool -> Subreddits -> String -> Criterion
-     -> Interval -> Int -> Time -> Time -> Page -> Element
+     -> Interval -> Int -> Time -> Time -> Time -> Page -> Element
 scene w regexOn sfwOn nsfwOn names query criterion interval amount
-      now timezoneOffset page =
+      now goBackFrom timezoneOffset page =
   case page of
-    MainPage -> mainPage w regexOn sfwOn nsfwOn names query criterion interval amount
-                now timezoneOffset
+    MainPage -> mainPage w regexOn sfwOn nsfwOn names query criterion interval
+                amount now goBackFrom timezoneOffset
     AboutPage -> about w
 
 showInputs : Bool -> Bool -> Bool -> Criterion -> Interval -> Amount
@@ -263,9 +293,9 @@ showLeftBody useRegex sfwOn nsfwOn criterion interval amount =
               , flow right [ inputElem, defaultSpacer, defaultSpacer ] ]
 
 mainPage : Int -> Bool -> Bool -> Bool -> Subreddits -> String -> Criterion
-        -> Interval -> Amount -> Time -> Time -> Element
+        -> Interval -> Amount -> Time -> Time -> Time -> Element
 mainPage w useRegex sfwOn nsfwOn names query criterion interval amount
-         now timezoneOffset =
+         now goBackFrom timezoneOffset =
   let
     suggestions = genSuggestions useRegex names query
     suggestionElems = suggestions |> take maxSuggestions
@@ -279,7 +309,7 @@ mainPage w useRegex sfwOn nsfwOn names query criterion interval amount
                       |> container 200 (heightOf suggestionsElemRaw) topLeft
 
     resultElem = showResult w query sfwOn nsfwOn criterion interval amount
-                            now timezoneOffset
+                            now goBackFrom timezoneOffset
     bodyLeft = showLeftBody useRegex sfwOn nsfwOn criterion interval amount
     centerHorizontally : Element -> Element
     centerHorizontally elem = container w (heightOf elem) midTop elem
