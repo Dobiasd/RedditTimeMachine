@@ -208,9 +208,10 @@ showResult w rawName sfwOn nsfwOn criterion interval amount now goBackFromRaw
     linkElems = zipWith (\t url -> toSizedText textSize t |> link url) texts urls
     nearerPossible = firstSeenEnd <= now
     furtherPossible = length spans >= amount
-    toDefTextCentered t = toDefText t |> container (widthOf columnElem) (round defTextSize) midTop
-    nearerElem = toDefTextCentered "... ^^^ ..."
-    furtherElem = toDefTextCentered "... vvv ..."
+    doCenter h x = x |> container (widthOf columnElem) h midTop
+    makeTimeElem img = repeat 4 img |> intersperse defaultSpacer |> flow right |> doCenter 24
+    nearerElem = makeTimeElem <| image 24 24 "imgs/arrowup.png"
+    furtherElem = makeTimeElem <| image 24 24 "imgs/arrowdown.png"
     firstSeenStart = head spans |> fst
     firstSeenEnd = head spans |> snd
     lastSeen = last spans |> fst
@@ -220,12 +221,13 @@ showResult w rawName sfwOn nsfwOn criterion interval amount now goBackFromRaw
                                 nearerElem nearerElem nearerElem
     furtherButton = customButton furtherClick.handle lastSeen
                                  furtherElem furtherElem furtherElem
-    noTimeBtnSpacer = spacer 0 textSize |> color white
+    noTimeBtnSpacer = spacer 0 24 |> color white
     columnElem = linkElems |> asColumns w
   in
-    flow down [ if nearerPossible then nearerButton else noTimeBtnSpacer
-              , columnElem
-              , if furtherPossible then furtherButton else noTimeBtnSpacer ]
+    [ if nearerPossible then nearerButton else noTimeBtnSpacer
+    , columnElem
+    , if furtherPossible then furtherButton else noTimeBtnSpacer ]
+    |> intersperse defaultSpacer |> flow down
 
 group : Int -> [a] -> [[a]]
 group n l = case l of
