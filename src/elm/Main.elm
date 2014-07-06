@@ -193,7 +193,7 @@ showResult w rawName sfwOn nsfwOn criterion interval amount now goBackFromRaw
       Months -> (lastNMonthsSpans, String.dropRight 3)
       Years -> (lastNYearsSpans, String.dropRight 6)
     -- 2005-05-01 minus 12 hours
-    validTime x = x > 1114905600*second - 12*60*60*second
+    validTime x = x > 1119398400*second - 12*60*60*second
     goBackFrom = (if validTime goBackFromRaw then goBackFromRaw else now)
                  |> min now
     spans = lastNFunc amount goBackFrom |> filter (validTime . snd)
