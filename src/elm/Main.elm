@@ -221,7 +221,7 @@ showResult w rawName sfwOn nsfwOn criterion interval amount now goBackFromRaw
                                 nearerElem nearerElem nearerElem
     furtherButton = customButton furtherClick.handle lastSeen
                                  furtherElem furtherElem furtherElem
-    noTimeBtnSpacer = spacer 0 24 |> color white
+    noTimeBtnSpacer = makeTimeElem <| image 24 24 "imgs/bar.png"
     columnElem = linkElems |> asColumns w
   in
     [ if nearerPossible then nearerButton else noTimeBtnSpacer
