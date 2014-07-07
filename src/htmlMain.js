@@ -77,10 +77,10 @@ function SetQueryColor(col) {
   queryElem.style.backgroundColor = col;
 }
 function SetTitle(name) {
-  var subreddit = "reddit";
+  var subreddit = "";
   if (name) {
-    subreddit = "/r/" + name;
+    subreddit = " - /r/" + name;
   }
-  var title = "Reddit Time Machine - check out what was up on " + subreddit + " days/weeks/months ago";
+  var title = "Reddit Time Machine" + subreddit;
   document.title = title;
 }
