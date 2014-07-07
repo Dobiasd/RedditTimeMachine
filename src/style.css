@@ -1,11 +1,3 @@
-#query {
-  top: 100px;
-  width: 200px;
-  display: block;
-  margin-left: auto;
-  margin-right: auto;
-}
-
 #queryField {
   /* http://stackoverflow.com/questions/5967758 */
   position:     absolute;
@@ -16,4 +8,5 @@
   z-index:      9999;   /* Try to get it on top. */
   width:        220px;
   font-size:    18px;
+  visibility:   hidden;
 }
