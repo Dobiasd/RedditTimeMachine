@@ -66,6 +66,7 @@ function ShowQuery(on) {
   if (on) {
     queryElem.style.visibility='visible';
     queryElem.focus();
+    queryElem.select();
   } else {
     queryElem.style.visibility='hidden';
   }
