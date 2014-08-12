@@ -30,6 +30,8 @@ shareIcons =
       , ( image iconSize iconSize "imgs/pinterest.png", "https://pinterest.com/pin/create/button/?url=&media=http://www.reddittimemachine.com&description=Check%20out%20what%20was%20up%20on%20reddit%20days/weeks/months%20ago." )
       , ( image iconSize iconSize "imgs/digg.png", "http://digg.com/submit?phase=2&url=http://www.reddittimemachine.com&title=Check%20out%20what%20was%20up%20on%20reddit%20days/weeks/months%20ago." )
       , ( image iconSize iconSize "imgs/stumbleupon.png", "http://www.stumbleupon.com/submit?url=http://www.reddittimemachine.com&title=Check%20out%20what%20was%20up%20on%20reddit%20days/weeks/months%20ago." )
+      , ( image iconSize iconSize "imgs/tumblr.png", "http://www.tumblr.com/share/link?url=reddittimemachine.com" )
+      , ( image iconSize iconSize "imgs/bufferapp.png", "https://bufferapp.com/add?url=http://www.reddittimemachine.com&text=Check%20out%20what%20was%20up%20on%20reddit%20days/weeks/months%20ago." )
       , ( image iconSize iconSize "imgs/email.png", "mailto:%20?subject=reddit time machine&body=Check%20out%20what%20was%20up%20on%20reddit%20days/weeks/months%20ago%20at%20http://www.reddittimemachine.com" ) ]
       |> map (\ (img, url) -> customButton clicks.handle () img img img |> link url)
   in
