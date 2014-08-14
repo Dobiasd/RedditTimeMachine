@@ -1,12 +1,22 @@
 #queryField {
   /* http://stackoverflow.com/questions/5967758 */
   position:     absolute;
-  /* top:          295px; */ /* with adds */
-  top:          205px; /* without adds */
+  top:          205px;
   left:         50%;    /* Move the left edge to the center. */
-  margin-left: -220px; /* And move it a bit to the left again. */
+  margin-left: -220px;  /* And move it a bit to the left again. */
   z-index:      9999;   /* Try to get it on top. */
   width:        220px;
+  font-size:    18px;
+  visibility:   hidden;
+}
+#searchField {
+  /* http://stackoverflow.com/questions/5967758 */
+  position:     absolute;
+  top:          457px;
+  left:         50%;    /* Move the left edge to the center. */
+  margin-left:  14px;   /* And move it a bit to the left again. */
+  z-index:      9998;   /* Try to get it on top. */
+  width:        160px;
   font-size:    18px;
   visibility:   hidden;
 }

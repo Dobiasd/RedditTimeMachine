@@ -27,6 +27,8 @@ import Criterion (Criterion, showCriterion, criterionDropDown, criterion
                 , readCriterion, criterionInput)
 import Interval (showInterval, Days, Weeks, Months, Years, Interval, interval
                , intervalDropDown, readInterval, intervalInput)
+import SearchType (SearchType, showSearchType, searchTypeDropDown, searchType
+                , readSearchType, searchTypeInput)
 
 -- To keep the query text input from swallowing characters
 -- if the generation of suggestions is too slow for the typing speed,
@@ -52,17 +54,20 @@ port intervalInStr : Signal String
 port amountInStr : Signal String
 port pageInStr : Signal String
 
+port searchTypeInStr : Signal String
+port search : Signal String
+
 currentPage : Signal Page
 currentPage = merge (readPage <~ pageInStr) pageClick.signal
 
 port staticLinkOut : Signal String
-port staticLinkOut = genStaticLink <~ query ~ useRegex ~ sfwOn ~ nsfwOn ~ criterion ~ interval ~ amount ~ currentPage
+port staticLinkOut = genStaticLink <~ query ~ useRegex ~ sfwOn ~ nsfwOn ~ criterion ~ searchType ~ search ~ interval ~ amount ~ currentPage
 
 port selected : Signal String
 port selected = suggestionClick.signal
 
-port showQuery : Signal Bool
-port showQuery = (\x -> x == MainPage) <~ currentPage
+port showQueryAndSearch : Signal Bool
+port showQueryAndSearch = (\x -> x == MainPage) <~ currentPage
 
 port queryColor : Signal String
 port queryColor =
@@ -92,6 +97,9 @@ interval = merge (readInterval <~ intervalInStr) intervalInput.signal
 criterion : Signal Criterion
 criterion = merge (readCriterion <~ sortedByInStr) criterionInput.signal
 
+searchType : Signal SearchType
+searchType = merge (readSearchType <~ sortedByInStr) searchTypeInput.signal
+
 amount : Signal Amount
 amount = merge (readAmount <~ amountInStr) amountInput.signal
 
@@ -120,6 +128,8 @@ main = scene <~ (dropRepeats Window.width)
               ~ subreddits
               ~ merge (String.toLower <~ query) suggestionClick.signal
               ~ criterion
+              ~ searchType
+              ~ search
               ~ interval
               ~ amount
               ~ now
@@ -127,11 +137,12 @@ main = scene <~ (dropRepeats Window.width)
               ~ timezoneOffset
               ~ currentPage
 
-genLink : String -> Criterion -> (Time, Time) -> String
-genLink name criterion (start, end) =
+genLink : String -> Criterion -> SearchType -> String -> (Time, Time) -> String
+genLink name criterion searchType search (start, end) =
   staticLink ("http://www.reddit.com/r/" ++ name ++ "/search")
-             [ ("q", "timestamp:" ++ show (start/second) ++ ".."
-                                  ++ show (end/second))
+             [ ("q", "(and+timestamp:" ++ show (start/second) ++ ".."
+                                     ++ show (end/second) ++ "+"
+                     ++ showSearchType searchType ++ ":'" ++ search ++ "')")
              , ("sort", showCriterion criterion)
              , ("restrict_sr", "on")
              , ("syntax", "cloudsearch") ]
@@ -144,15 +155,18 @@ staticLink base parameters =
   in
     base ++ (if String.isEmpty addon then "" else "?" ++ addon)
 
-genStaticLink : String -> Bool -> Bool -> Bool -> Criterion -> Interval
-             -> Int -> Page -> String
-genStaticLink query useRegex sfwOn nsfwOn criterion interval amount page =
+genStaticLink : String -> Bool -> Bool -> Bool -> Criterion -> SearchType
+             -> String -> Interval -> Int -> Page -> String
+genStaticLink query useRegex sfwOn nsfwOn criterion searchType search
+              interval amount page =
   staticLink ""
     [ ("query", query)
     , ("useregex", showBool useRegex)
     , ("sfw", showBool sfwOn)
     , ("nsfw", showBool nsfwOn)
     , ("sortedby", showCriterion criterion)
+    , ("searchtype", showSearchType searchType)
+    , ("search", search)
     , ("interval", showInterval interval)
     , ("amount", showAmount amount)
     , ("page", showPageName page) ]
@@ -181,10 +195,10 @@ nearerClick = input 0
 furtherClick : Input Time
 furtherClick = input 0
 
-showResult : Int -> String -> Bool -> Bool -> Criterion -> Interval -> Int
-          -> Time -> Time -> Time -> Element
-showResult w rawName sfwOn nsfwOn criterion interval amount now goBackFromRaw
-           timezoneOffset =
+showResult : Int -> String -> Bool -> Bool -> Criterion -> SearchType -> String
+          -> Interval -> Int -> Time -> Time -> Time -> Element
+showResult w rawName sfwOn nsfwOn criterion searchType search interval amount
+           now goBackFromRaw timezoneOffset =
   let
     name = avoidEmptySubredditName rawName
     (lastNFunc, transF) = case interval of
@@ -197,7 +211,7 @@ showResult w rawName sfwOn nsfwOn criterion interval amount now goBackFromRaw
     goBackFrom = (if validTime goBackFromRaw then goBackFromRaw else now)
                  |> min now
     spans = lastNFunc amount goBackFrom |> filter (validTime . snd)
-    urls = map (genLink name criterion) spans
+    urls = map (genLink name criterion searchType search) spans
     texts = map (showTimeSpan transF timezoneOffset) spans
     spanCnt = length spans
     textSize = if | spanCnt > 113 -> 16
@@ -250,17 +264,18 @@ asColumns w elems =
     map (flow down) rows |> intersperse paddedColSpacer |> flow right
 
 scene : Int -> Bool -> Bool -> Bool -> Subreddits -> String -> Criterion
-     -> Interval -> Int -> Time -> Time -> Time -> Page -> Element
-scene w regexOn sfwOn nsfwOn names query criterion interval amount
-      now goBackFrom timezoneOffset page =
+     -> SearchType -> String -> Interval -> Int -> Time -> Time -> Time -> Page
+     -> Element
+scene w regexOn sfwOn nsfwOn names query criterion searchType search interval
+      amount now goBackFrom timezoneOffset page =
   case page of
-    MainPage -> mainPage w regexOn sfwOn nsfwOn names query criterion interval
-                amount now goBackFrom timezoneOffset
+    MainPage -> mainPage w regexOn sfwOn nsfwOn names query criterion searchType
+                search interval amount now goBackFrom timezoneOffset
     AboutPage -> about w
 
-showInputs : Bool -> Bool -> Bool -> Criterion -> Interval -> Amount
-          -> Element
-showInputs useRegex sfwOn nsfwOn criterion interval amount =
+showInputs : Bool -> Bool -> Bool -> Criterion -> SearchType
+          -> Interval -> Amount -> Element
+showInputs useRegex sfwOn nsfwOn criterion searchType interval amount =
   let
     useRegexCheckBox = checkbox useRegexCheck.handle id useRegex |> width 23
     sfwCheckBox = checkbox sfwCheck.handle id sfwOn |> width 23
@@ -281,23 +296,27 @@ showInputs useRegex sfwOn nsfwOn criterion interval amount =
       , flow right [ toDefText "sorted by:" |> labelSizeF, criterionDropDown criterion ]
       , flow right [ toDefText "interval:"  |> labelSizeF, intervalDropDown interval ]
       , flow right [ toDefText "amount:"    |> labelSizeF, amountDropDown amount ]
+      , defaultSpacer
+      , flow right [ toDefText "search:"    |> labelSizeF, searchTypeDropDown searchType ]
       , defaultSpacer ]
   in
     intersperse defaultSpacer rows |> flow down
 
-showLeftBody : Bool -> Bool -> Bool -> Criterion -> Interval -> Amount
-            -> Element
-showLeftBody useRegex sfwOn nsfwOn criterion interval amount =
+showLeftBody : Bool -> Bool -> Bool -> Criterion -> SearchType -> Interval
+            -> Amount -> Element
+showLeftBody useRegex sfwOn nsfwOn criterion searchType interval amount =
   let
-    inputElem = showInputs useRegex sfwOn nsfwOn criterion interval amount
+    inputElem = showInputs useRegex sfwOn nsfwOn criterion searchType interval
+                           amount
   in
     flow down [ spacer 1 30 |> color bgColor -- room for text input field
               , flow right [ inputElem, defaultSpacer, defaultSpacer ] ]
 
 mainPage : Int -> Bool -> Bool -> Bool -> Subreddits -> String -> Criterion
-        -> Interval -> Amount -> Time -> Time -> Time -> Element
-mainPage w useRegex sfwOn nsfwOn names query criterion interval amount
-         now goBackFrom timezoneOffset =
+        -> SearchType -> String -> Interval -> Amount -> Time -> Time -> Time
+        -> Element
+mainPage w useRegex sfwOn nsfwOn names query criterion searchType search
+         interval amount now goBackFrom timezoneOffset =
   let
     suggestions = genSuggestions useRegex names query
     suggestionElems = suggestions |> take maxSuggestions
@@ -310,9 +329,10 @@ mainPage w useRegex sfwOn nsfwOn names query criterion interval amount
     suggestionsElem = suggestionsElemRaw
                       |> container 200 (heightOf suggestionsElemRaw) topLeft
 
-    resultElem = showResult w query sfwOn nsfwOn criterion interval amount
-                            now goBackFrom timezoneOffset
-    bodyLeft = showLeftBody useRegex sfwOn nsfwOn criterion interval amount
+    resultElem = showResult w query sfwOn nsfwOn criterion searchType search
+                            interval amount now goBackFrom timezoneOffset
+    bodyLeft = showLeftBody useRegex sfwOn nsfwOn criterion searchType interval
+                            amount
     centerHorizontally : Element -> Element
     centerHorizontally elem = container w (heightOf elem) midTop elem
     contentRaw = flow down [
