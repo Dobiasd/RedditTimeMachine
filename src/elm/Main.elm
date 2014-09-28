@@ -8,6 +8,9 @@ import Text
 import String
 import Window
 
+-- todo remove
+import Debug
+
 import Layout (defaultSpacer, pageWidth, bgColor, toDefText, toSizedText
              , toSizedTextMod, doubleDefSpacer, quadDefSpacer, defTextSize)
 import Skeleton (showPage)
@@ -253,8 +256,10 @@ asColumns : Int -> [Element] -> Element
 asColumns w elems =
   let
     maxW = map widthOf elems |> maximum
-    colCnt = w % (maxW + 2 * widthOf quadDefSpacer + 2) |> max 1
-    rowCnt = length elems % colCnt + 1 |> max 5
+    asd = Debug.log "maxW" (show maxW)
+    colCnt = w // (maxW + 2 * widthOf quadDefSpacer + 2) |> max 1
+    asd' = Debug.log "colCnt" (show colCnt)
+    rowCnt = length elems // colCnt + 1 |> max 5
     rows = group rowCnt elems
     cols = map (flow down) rows
     maxH = map heightOf cols |> maximum
