@@ -256,9 +256,7 @@ asColumns : Int -> [Element] -> Element
 asColumns w elems =
   let
     maxW = map widthOf elems |> maximum
-    asd = Debug.log "maxW" (show maxW)
     colCnt = w // (maxW + 2 * widthOf quadDefSpacer + 2) |> max 1
-    asd' = Debug.log "colCnt" (show colCnt)
     rowCnt = length elems // colCnt + 1 |> max 5
     rows = group rowCnt elems
     cols = map (flow down) rows
