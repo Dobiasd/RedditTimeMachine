@@ -26,12 +26,10 @@ showCriterion c =
     Top -> "top"
     Comments -> "comments"
 
--- todo: If issue 670 is resolved, remove the parameter current again.
---       https://github.com/elm-lang/Elm/issues/670
 criterionDropDown : Criterion -> Element
 criterionDropDown current =
   let
     f c = (showCriterion c, c)
-    all = [Top, Hot, Comments, Relevance] |> filter (\x -> x /= current)
+    all = [Top, Hot, Comments, Relevance]
   in
-    dropDown criterionInput.handle <| map f (current :: all)
+    dropDown criterionInput.handle <| map f all

@@ -1,6 +1,7 @@
 module SfwSwitches where
 
 import Graphics.Input (Input, input)
+import String
 
 import Sfw
 import Nsfw

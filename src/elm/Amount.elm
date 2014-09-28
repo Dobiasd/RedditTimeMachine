@@ -12,18 +12,16 @@ amountInput : Input Amount
 amountInput = input defaultAmount
 
 readAmount : String -> Amount
-readAmount = max 10 . min 500 . toIntDef defaultAmount
+readAmount = toIntDef defaultAmount >> min 500 >> max 10
 
 showAmount : Amount -> String
 showAmount = show
 
--- todo: If issue 670 is resolved, remove the parameter current again.
---       https://github.com/elm-lang/Elm/issues/670
-amountDropDown : Amount -> Element
-amountDropDown current =
+amountDropDown : Element
+amountDropDown =
   let
     f c = (showAmount c, c)
     -- Too much results in "too much recursion" in firefox.
-    all = [10, 20, 50, 100, 200, 500] |> filter (\x -> x /= current)
+    all = [10, 20, 50, 100, 200, 500]
   in
-    dropDown amountInput.handle <| map f (current :: all)
+    dropDown amountInput.handle <| map f all

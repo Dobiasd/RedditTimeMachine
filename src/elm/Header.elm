@@ -4,6 +4,7 @@ import Graphics.Input (Input, input, customButton)
 import Window
 
 import Layout (defaultSpacer, bgColor, toDefText, toSizedText)
+import Text
 
 iconSize : Int
 iconSize = 32
@@ -52,7 +53,7 @@ header w =
   let
     title = flow right [
       toSizedText 32 "reddit time machine"
-    , toText " .com" |> leftAligned . Text.color darkGray . Text.height 18
+    , toText " .com" |> Text.height 18 >> Text.color darkGray >> leftAligned
     ]
   in
     flow down [

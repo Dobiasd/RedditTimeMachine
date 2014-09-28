@@ -1,5 +1,7 @@
 module Layout where
 
+import Text
+
 spacerSize : Int
 spacerSize = 8
 
@@ -19,15 +21,15 @@ pageWidth : Int
 pageWidth = 450
 
 toSizedText : Float -> String -> Element
-toSizedText s = leftAligned . Text.color black . Text.height s . toText
+toSizedText s = toText >> Text.height s >> Text.color black >> leftAligned
 
 toSizedTextMod : (Text -> Text) -> Float -> String -> Element
 toSizedTextMod f s =
-  leftAligned . Text.color black . Text.height s . f . toText
+  toText >> f >> Text.height s >> Text.color black >> leftAligned
 
 toColText : Color -> String -> Element
 toColText c =
-  leftAligned . Text.color c . Text.height defTextSize . toText
+  toText >> Text.height defTextSize >> Text.color c >> leftAligned
 
 defTextSize : Float
 defTextSize = 20

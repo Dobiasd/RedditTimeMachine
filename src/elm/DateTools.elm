@@ -1,8 +1,10 @@
 module DateTools where
 
 import Date
+import Interval(Interval)
 
-import Interval(Interval, Days, Weeks, Months, Years)
+import List
+import String
 
 -- (start, end)
 type TimeSpan = (Time, Time)
@@ -135,7 +137,7 @@ dateAsIntsMinusOneWeek = applyNTimes 7 dateAsIntsMinusOneDay
 lastDayInMonth : DateAsInts -> Int
 lastDayInMonth {year, month} =
   if | month == 1 -> 31
-     | month == 2 -> if year `mod` 4 == 0 then 29 else 28
+     | month == 2 -> if year % 4 == 0 then 29 else 28
      | month == 3 -> 31
      | month == 4 -> 30
      | month == 5 -> 31
@@ -165,10 +167,10 @@ dateToDateAsInts date =
   dateAsInts (Date.year date) (Date.month date |> monthToInt) (Date.day date)
 
 timeToDateAsInts : Time -> DateAsInts
-timeToDateAsInts = dateToDateAsInts . Date.fromTime
+timeToDateAsInts = Date.fromTime >> dateToDateAsInts
 
 dateAsIntsToTime : DateAsInts -> Time
-dateAsIntsToTime = Date.toTime . readDate . showDateAsInts
+dateAsIntsToTime = showDateAsInts >> readDate >> Date.toTime
 
 showDateAsInts : DateAsInts -> String
 showDateAsInts intDate =
@@ -181,7 +183,7 @@ showDateAsInts intDate =
     join "-" [yearStr, monthStr, dayStr]
 
 readDate : String -> Date.Date
-readDate s = [Date.read s] |> justs |> head
+readDate s = [Date.read s] |> List.filterMap identity |> head
 
 monthToInt m =
   case m of

@@ -5,6 +5,8 @@ import Layout(toSizedText)
 
 import Graphics.Input (Input, input, button, customButton)
 import Regex
+import String
+import Text
 
 maxSuggestions : Int
 maxSuggestions = 10
@@ -27,13 +29,13 @@ genSuggestionsRegex names query =
   let
     ex = query |> Regex.regex
   in
-    filter (Regex.contains ex . fst) names
+    filter (fst >> Regex.contains ex) names
 
 genSuggestionsString : Subreddits -> String -> Subreddits
 genSuggestionsString srs query =
   let
-    allStarting = filter (String.startsWith query . fst) srs
-    allContaining = filter (containsNotStartsWith query . fst) srs
+    allStarting = filter (fst >> String.startsWith query) srs
+    allContaining = filter (fst >> containsNotStartsWith query) srs
   in
     allStarting ++ allContaining
 
@@ -42,9 +44,9 @@ containsNotStartsWith a b = String.contains a b && not (String.startsWith a b)
 
 subscriberCntToStr : Int -> String
 subscriberCntToStr i =
-  if | i > 1000000000 -> show (i `div` 1000000000) ++ "G"
-     | i >    1000000 -> show (i `div`    1000000) ++ "M"
-     | i >       1000 -> show (i `div`       1000) ++ "k"
+  if | i > 1000000000 -> show (i // 1000000000) ++ "G"
+     | i >    1000000 -> show (i //    1000000) ++ "M"
+     | i >       1000 -> show (i //       1000) ++ "k"
      | otherwise      -> show i
 
 showSubscriberCnt : Int -> Element
@@ -59,16 +61,13 @@ showSuggestion query ((s, i) as sr) =
     dummy = spacer 0 0 |> color white
   in
     if emptyQuery || isEmpty idxs
-      -- todo: Remove dummies when issue 672 is fixed:
-      -- https://github.com/elm-lang/Elm/issues/672
-      then suggButton (flow right [showSuggPart id black s
-                                 , dummy
-                                 , dummy
+      then suggButton (flow right [showSuggPart identity black s
                                  , showSubscriberCnt i]) s
       else showSuggestionNonEmptyQuery query sr (head idxs)
 
 showSuggPart : (Text -> Text) -> Color -> String -> Element
-showSuggPart f col = centered . f . Text.color col . Text.height 14 . toText
+showSuggPart f col =
+  toText >> Text.height 14 >> Text.color col >> f >> centered
 
 suggButton : Element -> String -> Element
 suggButton elem s =
@@ -76,10 +75,7 @@ suggButton elem s =
     elemHover = elem |> color lightBlue
     elemClick = elem |> color lightGreen
   in
-    -- todo: Use elemHover and elemClick again when issue 652 is solved:
-    -- https://github.com/elm-lang/Elm/issues/652
-    -- customButton suggestionClick.handle s elem elemHover elemClick
-    customButton suggestionClick.handle s elem elem elem
+    customButton suggestionClick.handle s elem elemHover elemClick
 
 showSuggestionNonEmptyQuery : String -> Subreddit -> Int -> Element
 showSuggestionNonEmptyQuery query (s, i) idx =
@@ -91,9 +87,9 @@ showSuggestionNonEmptyQuery query (s, i) idx =
       if idx == 0
         then ("", query, slc queryLen sLen s)
         else (slc 0 idx s, query, slc (idx + queryLen) sLen s)
-    elem = flow right [ showSuggPart id black s1
+    elem = flow right [ showSuggPart identity black s1
                       , showSuggPart bold black s2
-                      , showSuggPart id black s3
+                      , showSuggPart identity black s3
                       , showSubscriberCnt i]
   in suggButton elem s
 

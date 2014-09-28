@@ -25,15 +25,13 @@ showInterval c =
     Months -> "months"
     Years -> "years"
 
--- todo: If issue 670 is resolved, remove the parameter current again.
---       https://github.com/elm-lang/Elm/issues/670
 intervalDropDown : Interval -> Element
 intervalDropDown current =
   let
     f c = (showInterval c, c)
-    all = [Days, Weeks, Months, Years] |> filter (\x -> x /= current)
+    all = [Days, Weeks, Months, Years]
   in
-    dropDown intervalInput.handle <| map f (current :: all)
+    dropDown intervalInput.handle <| map f all
 
 intervalInMs : Interval -> Time
 intervalInMs i =

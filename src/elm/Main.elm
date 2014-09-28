@@ -13,21 +13,21 @@ import Layout (defaultSpacer, pageWidth, bgColor, toDefText, toSizedText
 import Skeleton (showPage)
 import About (about)
 import Suggestions (genSuggestions, showSuggestion, maxSuggestions
-                  , overflowIndicator, Subreddits, subreddits, suggestionClick
-                  , toIntDef, useRegexCheck, useRegexDefault)
-import Footer (pageClick, readPage, showPageName, MainPage, AboutPage, Page)
+                  , overflowIndicator, suggestionClick
+                  , useRegexCheck, useRegexDefault)
+import Footer (pageClick, readPage, showPageName, Page(MainPage))
 import DateTools (lastNDaySpans, showDateAsInts, timeToDateAsInts
                 , lastNWeekSpans, lastNMonthsSpans, lastNYearsSpans)
-import Amount (showAmount, amountDropDown, Amount, amount, readAmount
+import Amount (showAmount, amountDropDown, Amount, readAmount
              , amountInput)
-import SfwSwitches (toIntDef, sfwCheck, nsfwCheck, Subreddits, showBool, sfwOn
-                  , nsfwOn, subreddits, sfw, nsfw, readBoolDef, sfwDefault
+import SfwSwitches (toIntDef, sfwCheck, nsfwCheck, Subreddits, showBool
+                  , sfw, nsfw, readBoolDef, sfwDefault
                   , nsfwDefault)
-import Criterion (Criterion, showCriterion, criterionDropDown, criterion
+import Criterion (Criterion, showCriterion, criterionDropDown
                 , readCriterion, criterionInput)
-import Interval (showInterval, Days, Weeks, Months, Years, Interval, interval
+import Interval (showInterval, Interval(Days, Weeks, Months, Years)
                , intervalDropDown, readInterval, intervalInput)
-import SearchType (SearchType, showSearchType, searchTypeDropDown, searchType
+import SearchType (SearchType, showSearchType, searchTypeDropDown
                 , readSearchType, searchTypeInput)
 
 -- To keep the query text input from swallowing characters
@@ -121,7 +121,7 @@ subreddits = (\sfwOn nsfwOn ->
 
 -- todo: outfactor search options
 main : Signal Element
-main = scene <~ (dropRepeats Window.width)
+main = scene <~ Window.width
               ~ useRegex
               ~ sfwOn
               ~ nsfwOn
@@ -180,9 +180,9 @@ avoidEmptySubredditName = notEmptyOr "all"
 showTimeSpan : (String -> String) -> Time -> (Time, Time) -> String
 showTimeSpan transF timezoneOffset (start, end) =
   let
-    showTimeAsDate = showDateAsInts
-                   . timeToDateAsInts
-                   . (\x -> x + timezoneOffset)
+    showTimeAsDate = (\x -> x + timezoneOffset)
+      >> timeToDateAsInts
+      >> showDateAsInts
     -- aim at middle of day
     startStr = start + 12 * hour |> showTimeAsDate |> transF
     endStr = end - 12 * hour |> showTimeAsDate |> transF
@@ -202,15 +202,15 @@ showResult w rawName sfwOn nsfwOn criterion searchType search interval amount
   let
     name = avoidEmptySubredditName rawName
     (lastNFunc, transF) = case interval of
-      Days -> (lastNDaySpans, id)
-      Weeks -> (lastNWeekSpans, id)
+      Days -> (lastNDaySpans, identity)
+      Weeks -> (lastNWeekSpans, identity)
       Months -> (lastNMonthsSpans, String.dropRight 3)
       Years -> (lastNYearsSpans, String.dropRight 6)
     -- 2005-05-01 minus 12 hours
     validTime x = x > 1119398400*second - 12*60*60*second
     goBackFrom = (if validTime goBackFromRaw then goBackFromRaw else now)
                  |> min now
-    spans = lastNFunc amount goBackFrom |> filter (validTime . snd)
+    spans = lastNFunc amount goBackFrom |> filter (snd >> validTime)
     urls = map (genLink name criterion searchType search) spans
     texts = map (showTimeSpan transF timezoneOffset) spans
     spanCnt = length spans
@@ -253,8 +253,8 @@ asColumns : Int -> [Element] -> Element
 asColumns w elems =
   let
     maxW = map widthOf elems |> maximum
-    colCnt = w `div` (maxW + 2 * widthOf quadDefSpacer + 2) |> max 1
-    rowCnt = length elems `div` colCnt + 1 |> max 5
+    colCnt = w % (maxW + 2 * widthOf quadDefSpacer + 2) |> max 1
+    rowCnt = length elems % colCnt + 1 |> max 5
     rows = group rowCnt elems
     cols = map (flow down) rows
     maxH = map heightOf cols |> maximum
@@ -277,9 +277,10 @@ showInputs : Bool -> Bool -> Bool -> Criterion -> SearchType
           -> Interval -> Amount -> Element
 showInputs useRegex sfwOn nsfwOn criterion searchType interval amount =
   let
-    useRegexCheckBox = checkbox useRegexCheck.handle id useRegex |> width 23
-    sfwCheckBox = checkbox sfwCheck.handle id sfwOn |> width 23
-    nsfwCheckBox = checkbox nsfwCheck.handle id nsfwOn |> width 23
+    useRegexCheckBox = checkbox useRegexCheck.handle identity useRegex
+      |> width 23
+    sfwCheckBox = checkbox sfwCheck.handle identity sfwOn |> width 23
+    nsfwCheckBox = checkbox nsfwCheck.handle identity nsfwOn |> width 23
     labelSizeF = width 120
     rows =
       [ spacer 0 0 |> color bgColor
@@ -295,7 +296,7 @@ showInputs useRegex sfwOn nsfwOn criterion searchType interval amount =
       , defaultSpacer
       , flow right [ toDefText "sorted by:" |> labelSizeF, criterionDropDown criterion ]
       , flow right [ toDefText "interval:"  |> labelSizeF, intervalDropDown interval ]
-      , flow right [ toDefText "amount:"    |> labelSizeF, amountDropDown amount ]
+      , flow right [ toDefText "amount:"    |> labelSizeF, amountDropDown ]
       , defaultSpacer
       , flow right [ toDefText "search:"    |> labelSizeF, searchTypeDropDown searchType ]
       , defaultSpacer ]

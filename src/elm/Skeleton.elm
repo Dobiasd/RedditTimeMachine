@@ -1,7 +1,6 @@
 module Skeleton where
 
-import Layout (defaultSpacer, pageWidth, bgColor, toDefText, toSizedText
-             , showPage)
+import Layout (defaultSpacer, pageWidth, bgColor, toDefText, toSizedText)
 import Footer (footer)
 import Header (header)
 
