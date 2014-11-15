@@ -13,3 +13,4 @@ With the [built-in search function on reddit](http://www.reddit.com/wiki/search)
 ### Todo:
 - use options record to shorten function signatures
 - Could edit box now be in elm with new version? What about the focus? Lost character problem could be solved by outputting to a port and let JS put back in a different pseudo thread.
+- fix subreddit list updater
