@@ -8,9 +8,6 @@ import Text
 import String
 import Window
 
--- todo remove
-import Debug
-
 import Layout (defaultSpacer, pageWidth, bgColor, toDefText, toSizedText
              , toSizedTextMod, doubleDefSpacer, quadDefSpacer, defTextSize)
 import Skeleton (showPage)

@@ -18,8 +18,6 @@ logoWidth = 120
 clicks : Input ()
 clicks = input ()
 
--- Images as hyperlinks do not work, so customButton is used.
--- https://groups.google.com/forum/#!topic/elm-discuss/K5tHTGDbLLk
 shareIcons : Element
 shareIcons =
   let
@@ -34,7 +32,7 @@ shareIcons =
       , ( image iconSize iconSize "imgs/tumblr.png", "http://www.tumblr.com/share/link?url=reddittimemachine.com/past" )
       , ( image iconSize iconSize "imgs/bufferapp.png", "https://bufferapp.com/add?url=http://www.reddittimemachine.com/past&text=Check%20out%20what%20was%20up%20on%20reddit%20days/weeks/months%20ago." )
       , ( image iconSize iconSize "imgs/email.png", "mailto:%20?subject=reddit time machine&body=Check%20out%20what%20was%20up%20on%20reddit%20days/weeks/months%20ago%20at%20http://www.reddittimemachine.com/past" ) ]
-      |> map (\ (img, url) -> customButton clicks.handle () img img img |> link url)
+      |> map (\ (img, url) -> img |> link url)
   in
     toDefText "share: " :: buttons |> intersperse (defaultSpacer) |> flow right
 
