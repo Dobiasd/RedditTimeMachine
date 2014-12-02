@@ -3,7 +3,7 @@
 #rm -r build
 #rm -r cache
 
-elm -m -o --src-dir=./src/elm --set-runtime=elm-runtime.js src/elm/Main.elm
+elm -m -o --src-dir=./src/elm src/elm/Main.elm
 
 if [ $? -eq 0 ]
 then
