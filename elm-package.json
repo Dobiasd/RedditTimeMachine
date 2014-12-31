@@ -1,0 +1,14 @@
+{
+    "version": "1.0.0",
+    "summary": "Check out what was up on reddit days/weeks/months ago.",
+    "repository": "https://github.com/Dobiasd/RedditTimeMachine.git",
+    "license": "MIT",
+    "source-directories": [
+        "src/elm"
+    ],
+    "exposed-modules": [],
+    "dependencies": {
+        "elm-lang/core": "1.0.0 <= v < 2.0.0",
+        "evancz/elm-markdown": "1.1.0 <= v < 2.0.0"
+    }
+}
