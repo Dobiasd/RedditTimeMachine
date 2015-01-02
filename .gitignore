@@ -1,3 +1,10 @@
+build
+cache
+deploy.sh
+elm-stuff
+stuff
+*.sublime-project
+*.sublime-workspace
 get_subreddits/sfw
 get_subreddits/nsfw
 get_subreddits/Sfw.elm
