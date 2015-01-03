@@ -3,8 +3,12 @@ module Suggestions where
 import SfwSwitches(Subreddit, Subreddits)
 import Layout(toSizedText)
 
-import Graphics.Input (Input, input, button, customButton)
+import Color (darkGray, white, black, Color, lightBlue, lightGreen)
+import Graphics.Element (Element, spacer, color, flow, right)
+import Graphics.Input (button, customButton)
+import List (filter, isEmpty, head)
 import Regex
+import Signal
 import String
 import Text
 
@@ -17,8 +21,8 @@ overflowIndicator = "..."
 useRegexDefault : Bool
 useRegexDefault = False
 
-useRegexCheck : Input Bool
-useRegexCheck = input useRegexDefault
+useRegexCheck : Signal.Channel Bool
+useRegexCheck = Signal.channel useRegexDefault
 
 genSuggestions : Bool -> Subreddits -> String -> Subreddits
 genSuggestions useRegex =
@@ -44,14 +48,14 @@ containsNotStartsWith a b = String.contains a b && not (String.startsWith a b)
 
 subscriberCntToStr : Int -> String
 subscriberCntToStr i =
-  if | i > 1000000000 -> show (i // 1000000000) ++ "G"
-     | i >    1000000 -> show (i //    1000000) ++ "M"
-     | i >       1000 -> show (i //       1000) ++ "k"
-     | otherwise      -> show i
+  if | i > 1000000000 -> toString (i // 1000000000) ++ "G"
+     | i >    1000000 -> toString (i //    1000000) ++ "M"
+     | i >       1000 -> toString (i //       1000) ++ "k"
+     | otherwise      -> toString i
 
 showSubscriberCnt : Int -> Element
-showSubscriberCnt i = "  " ++ subscriberCntToStr i |> toText |> Text.height 12
-                              |> Text.color darkGray |> leftAligned
+showSubscriberCnt i = "  " ++ subscriberCntToStr i |> Text.fromString
+  |> Text.height 12 |> Text.color darkGray |> Text.leftAligned
 
 showSuggestion : String -> Subreddit -> Element
 showSuggestion query ((s, i) as sr) =
@@ -65,9 +69,9 @@ showSuggestion query ((s, i) as sr) =
                                  , showSubscriberCnt i]) s
       else showSuggestionNonEmptyQuery query sr (head idxs)
 
-showSuggPart : (Text -> Text) -> Color -> String -> Element
+showSuggPart : (Text.Text -> Text.Text) -> Color -> String -> Element
 showSuggPart f col =
-  toText >> Text.height 14 >> Text.color col >> f >> centered
+  Text.fromString >> Text.height 14 >> Text.color col >> f >> Text.centered
 
 suggButton : Element -> String -> Element
 suggButton elem s =
@@ -75,7 +79,7 @@ suggButton elem s =
     elemHover = elem |> color lightBlue
     elemClick = elem |> color lightGreen
   in
-    customButton suggestionClick.handle s elem elemHover elemClick
+    customButton (Signal.send suggestionClick s) elem elemHover elemClick
 
 showSuggestionNonEmptyQuery : String -> Subreddit -> Int -> Element
 showSuggestionNonEmptyQuery query (s, i) idx =
@@ -88,10 +92,10 @@ showSuggestionNonEmptyQuery query (s, i) idx =
         then ("", query, slc queryLen sLen s)
         else (slc 0 idx s, query, slc (idx + queryLen) sLen s)
     elem = flow right [ showSuggPart identity black s1
-                      , showSuggPart bold black s2
+                      , showSuggPart Text.bold black s2
                       , showSuggPart identity black s3
                       , showSubscriberCnt i]
   in suggButton elem s
 
-suggestionClick : Input String
-suggestionClick = input ""
+suggestionClick : Signal.Channel String
+suggestionClick = Signal.channel ""

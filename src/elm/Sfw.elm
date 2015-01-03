@@ -1,5 +1,5 @@
 module Sfw where
-sfwRaw : [String]
+sfwRaw : List String
 sfwRaw = [
   "00sRock,525"
  , "07Cheating,9"

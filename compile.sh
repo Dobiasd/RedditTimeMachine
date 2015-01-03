@@ -3,7 +3,7 @@
 rm -r build
 mkdir build
 
-elm -m -o --src-dir=./src/elm src/elm/Main.elm
+elm-make src/elm/Main.elm --output build/js/rtm_uncompressed.js
 
 if [ $? -eq 0 ]
 then
@@ -12,16 +12,10 @@ then
 
   mkdir -p ./build/js
 
-  for pathname in ./build/src/elm/*.js
-  do
-      filename="${pathname##*/}"
-      uglifyjs "$pathname" > "./build/js/$filename"
-  done
-
   cp ./src/index.html ./build/index.html
+  uglifyjs ./build/js/rtm_uncompressed.js > ./build/js/rtm.js
+  rm ./build/js/rtm_uncompressed.js
   uglifyjs ./src/htmlmain.js > ./build/js/htmlmain.js
   yui-compressor ./src/style.css > ./build/style.css
-
-  rm -r ./build/src
 
 fi

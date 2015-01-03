@@ -1,15 +1,20 @@
 module Footer where
 
-import Graphics.Input (Input, input, customButton)
+import Color(gray)
+import Graphics.Element(color, flow, down, right, container, heightOf, midTop
+  , Element)
+import Graphics.Input (customButton)
 import Layout (defaultSpacer)
+import Signal
+import Text(plainText)
 
 footer : Int -> Element
 footer w =
   let
     main = plainText "Home" |> color gray
     about = plainText "About" |> color gray
-    mainLink = customButton pageClick.handle MainPage main main main
-    aboutLink = customButton pageClick.handle AboutPage about about about
+    mainLink = customButton (Signal.send pageClick MainPage) main main main
+    aboutLink = customButton (Signal.send pageClick AboutPage) about about about
     content = flow down [ defaultSpacer
                        , flow right [ mainLink
                                     , defaultSpacer
@@ -19,8 +24,8 @@ footer w =
   in
     content |> container w (heightOf content) midTop
 
-pageClick : Input Page
-pageClick = input MainPage
+pageClick : Signal.Channel Page
+pageClick = Signal.channel MainPage
 
 defaultPage : Page
 defaultPage = MainPage
@@ -36,4 +41,4 @@ showPageName p =
     MainPage -> "home"
     AboutPage -> "about"
 
-data Page = MainPage | AboutPage
+type Page = MainPage | AboutPage

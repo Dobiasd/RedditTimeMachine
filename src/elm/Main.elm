@@ -1,10 +1,18 @@
 module Main where
 
-import Graphics.Input (Input, input, dropDown, checkbox, customButton)
+import Color (lightBlue)
+import Graphics.Element (Element, link, container, widthOf, midTop, flow
+  , right, image, down, heightOf, spacer, color, width, topLeft)
+import Graphics.Input (dropDown, checkbox, customButton)
 import Graphics.Input
 import Graphics.Input.Field as Field
 import Date
+import List (any, map, sortBy, reverse, filter, length, map2, repeat
+  , intersperse, head, (::), take, drop, maximum)
 import Text
+import Time (every, minute, Time, second, hour)
+import Signal ((<~), (~), Signal)
+import Signal
 import String
 import Window
 
@@ -58,13 +66,14 @@ port searchTypeInStr : Signal String
 port search : Signal String
 
 currentPage : Signal Page
-currentPage = merge (readPage <~ pageInStr) pageClick.signal
+currentPage = Signal.merge (readPage <~ pageInStr)
+                           (Signal.subscribe pageClick)
 
 port staticLinkOut : Signal String
 port staticLinkOut = genStaticLink <~ query ~ useRegex ~ sfwOn ~ nsfwOn ~ criterion ~ searchType ~ search ~ interval ~ amount ~ currentPage
 
 port selected : Signal String
-port selected = suggestionClick.signal
+port selected = Signal.subscribe suggestionClick
 
 port showQueryAndSearch : Signal Bool
 port showQueryAndSearch = (\x -> x == MainPage) <~ currentPage
@@ -85,33 +94,42 @@ now : Signal Time
 now = every minute
 
 goBackFrom : Signal Time
-goBackFrom = merges [constant 0, nearerClick.signal, furtherClick.signal]
+goBackFrom =
+  Signal.mergeMany [ Signal.constant 0
+                   , Signal.subscribe nearerClick
+                   , Signal.subscribe furtherClick]
 
 timezoneOffset : Signal Time
 timezoneOffset = (\x -> toFloat x * minute)
-                   <~ (dropRepeats timezoneOffsetInMinutes)
+                   <~ (Signal.dropRepeats timezoneOffsetInMinutes)
 
 interval : Signal Interval
-interval = merge (readInterval <~ intervalInStr) intervalInput.signal
+interval = Signal.merge (readInterval <~ intervalInStr)
+                        (Signal.subscribe intervalInput)
 
 criterion : Signal Criterion
-criterion = merge (readCriterion <~ sortedByInStr) criterionInput.signal
+criterion = Signal.merge (readCriterion <~ sortedByInStr)
+                         (Signal.subscribe criterionInput)
 
 searchType : Signal SearchType
-searchType = merge (readSearchType <~ sortedByInStr) searchTypeInput.signal
+searchType = Signal.merge (readSearchType <~ sortedByInStr)
+                          (Signal.subscribe searchTypeInput)
 
 amount : Signal Amount
-amount = merge (readAmount <~ amountInStr) amountInput.signal
+amount = Signal.merge (readAmount <~ amountInStr)
+                      (Signal.subscribe amountInput)
 
 useRegex : Signal Bool
-useRegex = merge (readBoolDef useRegexDefault <~ useRegexInStr)
-                 useRegexCheck.signal
+useRegex = Signal.merge (readBoolDef useRegexDefault <~ useRegexInStr)
+                        (Signal.subscribe useRegexCheck)
 
 sfwOn : Signal Bool
-sfwOn = merge (readBoolDef sfwDefault <~ sfwInStr) sfwCheck.signal
+sfwOn = Signal.merge (readBoolDef sfwDefault <~ sfwInStr)
+                     (Signal.subscribe sfwCheck)
 
 nsfwOn : Signal Bool
-nsfwOn = merge (readBoolDef nsfwDefault <~ nsfwInStr) nsfwCheck.signal
+nsfwOn = Signal.merge (readBoolDef nsfwDefault <~ nsfwInStr)
+                      (Signal.subscribe nsfwCheck)
 
 subreddits : Signal Subreddits
 subreddits = (\sfwOn nsfwOn ->
@@ -126,7 +144,8 @@ main = scene <~ Window.width
               ~ sfwOn
               ~ nsfwOn
               ~ subreddits
-              ~ merge (String.toLower <~ query) suggestionClick.signal
+              ~ Signal.merge (String.toLower <~ query)
+                             (Signal.subscribe suggestionClick)
               ~ criterion
               ~ searchType
               ~ search
@@ -140,18 +159,18 @@ main = scene <~ Window.width
 genLink : String -> Criterion -> SearchType -> String -> (Time, Time) -> String
 genLink name criterion searchType search (start, end) =
   staticLink ("http://www.reddit.com/r/" ++ name ++ "/search")
-             [ ("q", "(and+timestamp:" ++ show (start/second) ++ ".."
-                                     ++ show (end/second) ++ "+"
+             [ ("q", "(and+timestamp:" ++ toString (start/second) ++ ".."
+                                     ++ toString (end/second) ++ "+"
                      ++ showSearchType searchType ++ ":'" ++ search ++ "')")
              , ("sort", showCriterion criterion)
              , ("restrict_sr", "on")
              , ("syntax", "cloudsearch") ]
 
-staticLink : String -> [(String, String)] -> String
+staticLink : String -> List (String, String) -> String
 staticLink base parameters =
   let
     addon = map (\(name, value) -> name ++ "=" ++ value) parameters
-              |> join "&"
+              |> String.join "&"
   in
     base ++ (if String.isEmpty addon then "" else "?" ++ addon)
 
@@ -189,11 +208,13 @@ showTimeSpan transF timezoneOffset (start, end) =
   in
     startStr ++ if endStr /= startStr then " - " ++ endStr else ""
 
-nearerClick : Input Time
-nearerClick = input 0
+nearerClick : Signal.Channel Time
+nearerClick = Signal.channel 0
 
-furtherClick : Input Time
-furtherClick = input 0
+furtherClick : Signal.Channel Time
+furtherClick = Signal.channel 0
+
+last = reverse >> head
 
 showResult : Int -> String -> Bool -> Bool -> Criterion -> SearchType -> String
           -> Interval -> Int -> Time -> Time -> Time -> Element
@@ -219,7 +240,7 @@ showResult w rawName sfwOn nsfwOn criterion searchType search interval amount
                   | spanCnt >  33 -> 20
                   | spanCnt >  13 -> 22
                   | otherwise     -> 24
-    linkElems = zipWith (\t url -> toSizedText textSize t |> link url) texts urls
+    linkElems = map2 (\t url -> toSizedText textSize t |> link url) texts urls
     nearerPossible = firstSeenEnd <= now
     furtherPossible = length spans >= amount
     doCenter h x = x |> container (widthOf columnElem) h midTop
@@ -231,9 +252,10 @@ showResult w rawName sfwOn nsfwOn criterion searchType search interval amount
     lastSeen = last spans |> fst
     seenSpan = firstSeenEnd - lastSeen
     oneSpan = firstSeenEnd - firstSeenStart
-    nearerButton = customButton nearerClick.handle (firstSeenStart + seenSpan - (oneSpan/2))
+    nearerButton = customButton (Signal.send nearerClick
+                                  (firstSeenStart + seenSpan - (oneSpan/2)))
                                 nearerElem nearerElem nearerElem
-    furtherButton = customButton furtherClick.handle lastSeen
+    furtherButton = customButton (Signal.send furtherClick lastSeen)
                                  furtherElem furtherElem furtherElem
     noTimeBtnSpacer = makeTimeElem <| image 24 24 "imgs/bar.png"
     columnElem = linkElems |> asColumns w
@@ -243,13 +265,13 @@ showResult w rawName sfwOn nsfwOn criterion searchType search interval amount
     , if furtherPossible then furtherButton else noTimeBtnSpacer ]
     |> intersperse defaultSpacer |> flow down
 
-group : Int -> [a] -> [[a]]
+group : Int -> List a -> List (List a)
 group n l = case l of
   [] -> []
   l -> if | n > 0 -> (take n l) :: (group n (drop n l))
           | otherwise -> []
 
-asColumns : Int -> [Element] -> Element
+asColumns : Int -> List Element -> Element
 asColumns w elems =
   let
     maxW = map widthOf elems |> maximum
@@ -277,10 +299,10 @@ showInputs : Bool -> Bool -> Bool -> Criterion -> SearchType
           -> Interval -> Amount -> Element
 showInputs useRegex sfwOn nsfwOn criterion searchType interval amount =
   let
-    useRegexCheckBox = checkbox useRegexCheck.handle identity useRegex
+    useRegexCheckBox = checkbox (Signal.send useRegexCheck) useRegex
       |> width 23
-    sfwCheckBox = checkbox sfwCheck.handle identity sfwOn |> width 23
-    nsfwCheckBox = checkbox nsfwCheck.handle identity nsfwOn |> width 23
+    sfwCheckBox = checkbox (Signal.send sfwCheck) sfwOn |> width 23
+    nsfwCheckBox = checkbox (Signal.send nsfwCheck) nsfwOn |> width 23
     labelSizeF = width 120
     rows =
       [ spacer 0 0 |> color bgColor

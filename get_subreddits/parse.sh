@@ -2,7 +2,7 @@ function parse {
     grep -r $1 -e '.*' | grep -e "reddit.com\/r\/" | grep -v "%" | perl -pe 's/.*reddit.com.r.[^\/]*\/"\>([^\<]*).............([0-9]*).*/ , "\1,\2"/g' > temp_list.txt
 
     echo module $2 where > $2.elm.temp
-    echo "$1Raw : [String]" >> $2.elm.temp
+    echo "$1Raw : List String" >> $2.elm.temp
     echo $1Raw = [ >> $2.elm.temp
     cat temp_list.txt | sort | uniq >> $2.elm.temp
     echo -n " ]" >> $2.elm.temp

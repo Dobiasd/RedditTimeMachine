@@ -1,6 +1,10 @@
 module Skeleton where
 
+import Color (lightOrange)
+import Graphics.Element (heightOf, flow, down, spacer, color, container
+  , midTop, Element)
 import Layout (defaultSpacer, pageWidth, bgColor, toDefText, toSizedText)
+import List ((::))
 import Footer (footer)
 import Header (header)
 

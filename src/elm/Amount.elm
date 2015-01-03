@@ -1,21 +1,24 @@
 module Amount where
 
-import Graphics.Input (Input, input, dropDown)
+import Graphics.Element (Element)
+import Graphics.Input (dropDown)
+import List (map)
+import Signal
 import SfwSwitches (toIntDef)
 
-type Amount = Int
+type alias Amount = Int
 
 defaultAmount : Int
 defaultAmount = 20
 
-amountInput : Input Amount
-amountInput = input defaultAmount
+amountInput : Signal.Channel Amount
+amountInput = Signal.channel defaultAmount
 
 readAmount : String -> Amount
 readAmount = toIntDef defaultAmount >> min 500 >> max 10
 
 showAmount : Amount -> String
-showAmount = show
+showAmount = toString
 
 amountDropDown : Element
 amountDropDown =
@@ -24,4 +27,4 @@ amountDropDown =
     -- Too much results in "too much recursion" in firefox.
     all = [10, 20, 50, 100, 200, 500]
   in
-    dropDown amountInput.handle <| map f all
+    dropDown (Signal.send amountInput) <| map f all

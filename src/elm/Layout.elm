@@ -1,5 +1,7 @@
 module Layout where
 
+import Color(Color, lightGray, black)
+import Graphics.Element(Element, spacer)
 import Text
 
 spacerSize : Int
@@ -21,15 +23,26 @@ pageWidth : Int
 pageWidth = 450
 
 toSizedText : Float -> String -> Element
-toSizedText s = toText >> Text.height s >> Text.color black >> leftAligned
+toSizedText s =
+  Text.fromString
+  >> Text.height s
+  >> Text.color black
+  >> Text.leftAligned
 
-toSizedTextMod : (Text -> Text) -> Float -> String -> Element
+toSizedTextMod : (Text.Text -> Text.Text) -> Float -> String -> Element
 toSizedTextMod f s =
-  toText >> f >> Text.height s >> Text.color black >> leftAligned
+  Text.fromString
+  >> f
+  >> Text.height s
+  >> Text.color black
+  >> Text.leftAligned
 
 toColText : Color -> String -> Element
 toColText c =
-  toText >> Text.height defTextSize >> Text.color c >> leftAligned
+  Text.fromString
+  >> Text.height defTextSize
+  >> Text.color c
+  >> Text.leftAligned
 
 defTextSize : Float
 defTextSize = 20

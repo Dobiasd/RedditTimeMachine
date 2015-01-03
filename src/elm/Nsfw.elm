@@ -1,5 +1,5 @@
 module Nsfw where
-nsfwRaw : [String]
+nsfwRaw : List String
 nsfwRaw = [
   "10phoenix01,8"
  , "1201978,46"

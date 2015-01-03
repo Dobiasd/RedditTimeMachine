@@ -1,20 +1,21 @@
 module SfwSwitches where
 
-import Graphics.Input (Input, input)
+import List(map)
 import String
+import Signal
 
 import Sfw
 import Nsfw
 
-type Subreddit = (String, Int)
-type Subreddits = [Subreddit]
+type alias Subreddit = (String, Int)
+type alias Subreddits = List Subreddit
 
 toIntDef : Int -> String -> Int
 toIntDef def x = case String.toInt x of
-  Just res -> res
-  Nothing -> def
+  Ok res -> res
+  Err _ -> def
 
-parseRawSubreddits : [String] -> Subreddits
+parseRawSubreddits : List String -> Subreddits
 parseRawSubreddits =
   let
     parseRawSubreddit raw = String.split "," raw |>
@@ -22,7 +23,7 @@ parseRawSubreddits =
   in
     map parseRawSubreddit
 
-lowerFst : [(String, a)] -> [(String, a)]
+lowerFst : List (String, a) -> List (String, a)
 lowerFst = map (\(s, i) -> (String.toLower s, i))
 
 readBoolDef : Bool -> String -> Bool
@@ -39,11 +40,11 @@ sfwDefault = True
 nsfwDefault : Bool
 nsfwDefault = False
 
-sfwCheck : Input Bool
-sfwCheck = input sfwDefault
+sfwCheck : Signal.Channel Bool
+sfwCheck = Signal.channel sfwDefault
 
-nsfwCheck : Input Bool
-nsfwCheck = input nsfwDefault
+nsfwCheck : Signal.Channel Bool
+nsfwCheck = Signal.channel nsfwDefault
 
 sfw : Subreddits
 sfw = Sfw.sfwRaw |> parseRawSubreddits |> lowerFst

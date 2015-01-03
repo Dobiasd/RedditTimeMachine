@@ -1,6 +1,11 @@
 module Header where
 
-import Graphics.Input (Input, input, customButton)
+import Color (lightBlue, darkGray)
+import Graphics.Element (image, link, flow, right, Element, down, container
+  , heightOf, topRight, color, midTop)
+import Graphics.Input (customButton)
+import List (map, (::), intersperse)
+import Signal
 import Window
 
 import Layout (defaultSpacer, bgColor, toDefText, toSizedText)
@@ -15,8 +20,8 @@ logoHeight = 100
 logoWidth : Int
 logoWidth = 120
 
-clicks : Input ()
-clicks = input ()
+clicks : Signal.Channel ()
+clicks = Signal.channel ()
 
 shareIcons : Element
 shareIcons =
@@ -51,7 +56,8 @@ header w =
   let
     title = flow right [
       toSizedText 32 "reddit time machine"
-    , toText " .com" |> Text.height 18 >> Text.color darkGray >> leftAligned
+    , Text.fromString " .com"
+      |> Text.height 18 >> Text.color darkGray >> Text.leftAligned
     ]
   in
     flow down [

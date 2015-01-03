@@ -3,23 +3,28 @@ module DateTools where
 import Date
 import Interval(Interval)
 
-import List
+import List((::), reverse, head, map, filterMap)
 import String
+import Time
 
 -- (start, end)
-type TimeSpan = (Time, Time)
+type alias TimeSpan = (Time.Time, Time.Time)
 
-type DateAsInts = {year: Int, month: Int, day: Int}
+type alias DateAsInts = {year: Int, month: Int, day: Int}
+
 dateAsInts y m d = {year = y, month = m, day =d}
 
-oneDay : Time
-oneDay = 24*60*60*second
+oneDay : Time.Time
+oneDay = 24*60*60*Time.second
 
-oneWeek : Time
+oneWeek : Time.Time
 oneWeek = 7 * oneDay
 
-iterate : Int -> (a -> a) -> a -> [a]
+iterate : Int -> (a -> a) -> a -> List a
 iterate n f x = if n < 1 then [] else x :: iterate (n-1) f (f x)
+
+last : List a -> a
+last = reverse >> head
 
 applyNTimes : Int -> (a -> a) -> a -> a
 applyNTimes n f x =
@@ -28,17 +33,17 @@ applyNTimes n f x =
 
 -- days
 
-lastNDays : Int -> DateAsInts -> [DateAsInts]
+lastNDays : Int -> DateAsInts -> List DateAsInts
 lastNDays n today = iterate n dateAsIntsMinusOneDay today
 
-lastNDayStarts : Int -> Time -> [Time]
+lastNDayStarts : Int -> Time.Time -> List Time.Time
 lastNDayStarts n now =
   let
     today = now |> timeToDateAsInts
   in
     lastNDays n today |> map dateAsIntsToTime
 
-lastNDaySpans : Int -> Time -> [TimeSpan]
+lastNDaySpans : Int -> Time.Time -> List TimeSpan
 lastNDaySpans n now =
   let
     starts = lastNDayStarts n now
@@ -47,7 +52,7 @@ lastNDaySpans n now =
 
 -- weeks
 
-lastNWeeks : Int -> DateAsInts -> [DateAsInts]
+lastNWeeks : Int -> DateAsInts -> List DateAsInts
 lastNWeeks n today = iterate n dateAsIntsMinusOneWeek today
 
 floorWeek : DateAsInts -> DateAsInts
@@ -66,7 +71,7 @@ floorWeek intDate =
   in
     applyNTimes n dateAsIntsMinusOneDay intDate
 
-lastNWeekStarts : Int -> Time -> [Time]
+lastNWeekStarts : Int -> Time.Time -> List Time.Time
 lastNWeekStarts n now =
   let
     today = now |> timeToDateAsInts
@@ -74,7 +79,7 @@ lastNWeekStarts n now =
   in
     lastNWeeks n lastMonday |> map dateAsIntsToTime
 
-lastNWeekSpans : Int -> Time -> [TimeSpan]
+lastNWeekSpans : Int -> Time.Time -> List TimeSpan
 lastNWeekSpans n now =
   let
     starts = lastNWeekStarts n now
@@ -83,7 +88,7 @@ lastNWeekSpans n now =
 
 -- months
 
-lastNMonthsSpans : Int -> Time -> [TimeSpan]
+lastNMonthsSpans : Int -> Time.Time -> List TimeSpan
 lastNMonthsSpans n now =
   let
     starts = now |> timeToDateAsInts
@@ -100,7 +105,7 @@ floorMonth ({day} as intDate) = { intDate | day <- 1 }
 
 -- years
 
-lastNYearsSpans : Int -> Time -> [TimeSpan]
+lastNYearsSpans : Int -> Time.Time -> List TimeSpan
 lastNYearsSpans n now =
   let
     starts = now |> timeToDateAsInts
@@ -166,24 +171,29 @@ dateToDateAsInts : Date.Date -> DateAsInts
 dateToDateAsInts date =
   dateAsInts (Date.year date) (Date.month date |> monthToInt) (Date.day date)
 
-timeToDateAsInts : Time -> DateAsInts
+timeToDateAsInts : Time.Time -> DateAsInts
 timeToDateAsInts = Date.fromTime >> dateToDateAsInts
 
-dateAsIntsToTime : DateAsInts -> Time
+dateAsIntsToTime : DateAsInts -> Time.Time
 dateAsIntsToTime = showDateAsInts >> readDate >> Date.toTime
 
 showDateAsInts : DateAsInts -> String
 showDateAsInts intDate =
   let
     pad = String.padLeft 2 '0'
-    yearStr = show intDate.year
-    monthStr = show intDate.month |> pad
-    dayStr = show intDate.day |> pad
+    yearStr = toString intDate.year
+    monthStr = toString intDate.month |> pad
+    dayStr = toString intDate.day |> pad
   in
-    join "-" [yearStr, monthStr, dayStr]
+    String.join "-" [yearStr, monthStr, dayStr]
+
+toMaybe : Result b a -> Maybe a
+toMaybe x = case x of
+  Ok a -> Just a
+  Err _ -> Nothing
 
 readDate : String -> Date.Date
-readDate s = [Date.read s] |> List.filterMap identity |> head
+readDate s = [Date.fromString s] |> map toMaybe |> filterMap identity |> head
 
 monthToInt m =
   case m of

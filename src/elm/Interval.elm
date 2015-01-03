@@ -1,14 +1,18 @@
 module Interval where
 
-import Graphics.Input (Input, input, dropDown)
+import List(map)
+import Graphics.Element(Element)
+import Graphics.Input (dropDown)
+import Signal
+import Time
 
-data Interval = Days | Weeks | Months | Years
+type Interval = Days | Weeks | Months | Years
 
 defaultInterval : Interval
 defaultInterval = Months
 
-intervalInput : Input Interval
-intervalInput = input defaultInterval
+intervalInput : Signal.Channel Interval
+intervalInput = Signal.channel defaultInterval
 
 readInterval : String -> Interval
 readInterval s = if | s == "days" -> Days
@@ -31,9 +35,9 @@ intervalDropDown current =
     f c = (showInterval c, c)
     all = [Days, Weeks, Months, Years]
   in
-    dropDown intervalInput.handle <| map f all
+    dropDown (Signal.send intervalInput) <| map f all
 
-intervalInMs : Interval -> Time
+intervalInMs : Interval -> Time.Time
 intervalInMs i =
   case i of
     Days -> 1000*3600*24
