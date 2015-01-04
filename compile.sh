@@ -7,7 +7,6 @@ elm-make src/elm/Main.elm --output build/js/rtm_uncompressed.js
 
 if [ $? -eq 0 ]
 then
-  cp ./src/.htaccess ./build
   cp -r ./src/imgs ./build
 
   mkdir -p ./build/js
