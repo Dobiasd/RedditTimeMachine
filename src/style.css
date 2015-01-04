@@ -8,7 +8,7 @@ html,body
 #queryField {
   /* http://stackoverflow.com/questions/5967758 */
   position:     absolute;
-  top:          265px;
+  top:          240px;
   left:         50%;    /* Move the left edge to the center. */
   margin-left: -220px;  /* And move it a bit to the left again. */
   z-index:      9999;   /* Try to get it on top. */
@@ -20,7 +20,7 @@ html,body
 #searchField {
   /* http://stackoverflow.com/questions/5967758 */
   position:     absolute;
-  top:          517px;
+  top:          492px;
   left:         50%;    /* Move the left edge to the center. */
   margin-left:  14px;   /* And move it a bit to the left again. */
   z-index:      9998;   /* Try to get it on top. */
