@@ -1,7 +1,14 @@
+html,body
+{
+    height: 100%;
+    margin: 0px;
+    padding: 0px;
+}
+
 #queryField {
   /* http://stackoverflow.com/questions/5967758 */
   position:     absolute;
-  top:          205px;
+  top:          265px;
   left:         50%;    /* Move the left edge to the center. */
   margin-left: -220px;  /* And move it a bit to the left again. */
   z-index:      9999;   /* Try to get it on top. */
@@ -9,14 +16,26 @@
   font-size:    18px;
   visibility:   hidden;
 }
+
 #searchField {
   /* http://stackoverflow.com/questions/5967758 */
   position:     absolute;
-  top:          457px;
+  top:          517px;
   left:         50%;    /* Move the left edge to the center. */
   margin-left:  14px;   /* And move it a bit to the left again. */
   z-index:      9998;   /* Try to get it on top. */
   width:        160px;
   font-size:    18px;
   visibility:   hidden;
+}
+
+div#ads
+{
+  position:     absolute;
+  top:          0px;
+  left:         0px;
+  z-index:      9999;
+  width:        728px;
+  height:       90px;
+  display:      block;
 }

@@ -2,13 +2,13 @@ module Header where
 
 import Color (lightBlue, darkGray)
 import Graphics.Element (image, link, flow, right, Element, down, container
-  , heightOf, topRight, color, midTop)
+  , heightOf, topRight, color, midTop, spacer)
 import Graphics.Input (customButton)
 import List (map, (::), intersperse)
 import Signal
 import Window
 
-import Layout (defaultSpacer, bgColor, toDefText, toSizedText)
+import Layout (defaultSpacer, bgColor, toDefText, toSizedText, asGrid)
 import Text
 
 iconSize : Int
@@ -39,17 +39,21 @@ shareIcons =
       , ( image iconSize iconSize "imgs/email.png", "mailto:%20?subject=reddit time machine&body=Check%20out%20what%20was%20up%20on%20reddit%20days/weeks/months%20ago%20at%20http://www.reddittimemachine.com/past" ) ]
       |> map (\ (img, url) -> img |> link url)
   in
-    toDefText "share: " :: buttons |> intersperse (defaultSpacer) |> flow right
+    buttons |> asGrid 5 defaultSpacer
 
 logo : Element
 logo = image logoWidth logoHeight "imgs/snoo.png"
 
 topBar : Int -> Element
 topBar w =
-  flow down [ defaultSpacer
-            , flow right [ shareIcons, defaultSpacer ]
-              |> container w (heightOf shareIcons) topRight
-            , defaultSpacer ] |> color lightBlue
+  flow right [
+    spacer 1 90
+    , flow down [
+          defaultSpacer
+        , flow right [ shareIcons, defaultSpacer ]
+          |> container w (heightOf shareIcons) topRight
+        , defaultSpacer ]
+  ] |> color lightBlue
 
 header : Int -> Element
 header w =
