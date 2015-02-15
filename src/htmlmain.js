@@ -57,6 +57,12 @@ function CheckQuery() {
   if (!queryElem)
     return;
   var query = queryElem.value;
+
+  // Produce a temporary regex object
+  // to let the exeption be thrown here
+  // instead of inside elm.
+  // https://groups.google.com/forum/?fromgroups#!topic/elm-discuss/7Uwl5-usqjs
+  var re = new RegExp(query);
   if (query != lastQuery) {
     lastQuery = query;
     page.ports.query.send(query);
