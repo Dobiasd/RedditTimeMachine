@@ -1,4 +1,4 @@
-# [Reddit Time Machine](http://www.reddittimemachine.com)
+# [Reddit Time Machine](http://www.reddittimemachine.com/past)
 
 ![logo](src/imgs/snoo.png)
 
