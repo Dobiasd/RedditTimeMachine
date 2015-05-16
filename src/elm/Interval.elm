@@ -1,8 +1,8 @@
 module Interval where
 
-import List(map)
-import Graphics.Element(Element)
-import Graphics.Input (dropDown)
+import List exposing (map)
+import Graphics.Element exposing (Element)
+import Graphics.Input exposing (dropDown)
 import Signal
 import Time
 
@@ -11,8 +11,8 @@ type Interval = Days | Weeks | Months | Years
 defaultInterval : Interval
 defaultInterval = Months
 
-intervalInput : Signal.Channel Interval
-intervalInput = Signal.channel defaultInterval
+intervalInput : Signal.Mailbox Interval
+intervalInput = Signal.mailbox defaultInterval
 
 readInterval : String -> Interval
 readInterval s = if | s == "days" -> Days
@@ -35,7 +35,7 @@ intervalDropDown current =
     f c = (showInterval c, c)
     all = [Days, Weeks, Months, Years]
   in
-    dropDown (Signal.send intervalInput) <| map f all
+    dropDown (Signal.message intervalInput.address) <| map f all
 
 intervalInMs : Interval -> Time.Time
 intervalInMs i =

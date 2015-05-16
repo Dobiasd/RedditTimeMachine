@@ -1,9 +1,9 @@
 module About where
 
-import Graphics.Element(Element)
+import Graphics.Element exposing (Element)
 import Markdown
-import Skeleton (showPage)
-import Layout (toColText, defaultSpacer)
+import Skeleton exposing (showPage)
+import Layout exposing (toColText, defaultSpacer)
 
 about : Int -> Element
 about w =

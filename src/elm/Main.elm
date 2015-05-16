@@ -1,41 +1,41 @@
 module Main where
 
-import Color (lightBlue)
-import Graphics.Element (Element, link, container, widthOf, midTop, flow
-  , right, image, down, heightOf, spacer, color, width, topLeft)
-import Graphics.Input (dropDown, checkbox, customButton)
-import Graphics.Input
+import Color exposing (lightBlue)
+import Graphics.Element exposing (Element, link, container, widthOf, midTop
+  , flow, right, image, down, heightOf, spacer, color, width, topLeft)
+import Graphics.Input exposing (dropDown, checkbox, customButton)
 import Graphics.Input.Field as Field
 import Date
-import List (any, map, sortBy, reverse, filter, length, map2, repeat
+import List exposing (any, map, sortBy, reverse, filter, length, map2, repeat
   , intersperse, head, (::), take, drop, maximum)
 import Text
-import Time (every, minute, Time, second, hour)
-import Signal ((<~), (~), Signal)
+import Time exposing (every, minute, Time, second, hour)
+import Signal exposing ((<~), (~), Signal)
 import Signal
 import String
 import Window
 
-import Layout (defaultSpacer, pageWidth, bgColor, toDefText, toSizedText
-             , toSizedTextMod, doubleDefSpacer, quadDefSpacer, defTextSize)
-import Skeleton (showPage)
-import About (about)
-import Suggestions (genSuggestions, showSuggestion, maxSuggestions
+import Unsafe exposing (unsafeHead, unsafeMaybe)
+import Layout exposing (defaultSpacer, pageWidth, bgColor, toDefText
+  , toSizedText, toSizedTextMod, doubleDefSpacer, quadDefSpacer, defTextSize)
+import Skeleton exposing (showPage)
+import About exposing (about)
+import Suggestions exposing (genSuggestions, showSuggestion, maxSuggestions
                   , overflowIndicator, suggestionClick
                   , useRegexCheck, useRegexDefault)
-import Footer (pageClick, readPage, showPageName, Page(MainPage))
-import DateTools (lastNDaySpans, showDateAsInts, timeToDateAsInts
+import Footer exposing (pageClick, readPage, showPageName, Page(MainPage))
+import DateTools exposing (lastNDaySpans, showDateAsInts, timeToDateAsInts
                 , lastNWeekSpans, lastNMonthsSpans, lastNYearsSpans)
-import Amount (showAmount, amountDropDown, Amount, readAmount
+import Amount exposing (showAmount, amountDropDown, Amount, readAmount
              , amountInput)
-import SfwSwitches (toIntDef, sfwCheck, nsfwCheck, Subreddits, showBool
+import SfwSwitches exposing (toIntDef, sfwCheck, nsfwCheck, Subreddits, showBool
                   , sfw, nsfw, readBoolDef, sfwDefault
                   , nsfwDefault)
-import Criterion (Criterion, showCriterion, criterionDropDown
+import Criterion exposing (Criterion, showCriterion, criterionDropDown
                 , readCriterion, criterionInput)
-import Interval (showInterval, Interval(Days, Weeks, Months, Years)
+import Interval exposing (showInterval, Interval(Days, Weeks, Months, Years)
                , intervalDropDown, readInterval, intervalInput)
-import SearchType (SearchType, showSearchType, searchTypeDropDown
+import SearchType exposing (SearchType, showSearchType, searchTypeDropDown
                 , readSearchType, searchTypeInput)
 
 -- To keep the query text input from swallowing characters
@@ -66,14 +66,13 @@ port searchTypeInStr : Signal String
 port search : Signal String
 
 currentPage : Signal Page
-currentPage = Signal.merge (readPage <~ pageInStr)
-                           (Signal.subscribe pageClick)
+currentPage = Signal.merge (readPage <~ pageInStr) pageClick.signal
 
 port staticLinkOut : Signal String
 port staticLinkOut = genStaticLink <~ query ~ useRegex ~ sfwOn ~ nsfwOn ~ criterion ~ searchType ~ search ~ interval ~ amount ~ currentPage
 
 port selected : Signal String
-port selected = Signal.subscribe suggestionClick
+port selected = suggestionClick.signal
 
 port showQueryAndSearch : Signal Bool
 port showQueryAndSearch = (\x -> x == MainPage) <~ currentPage
@@ -96,8 +95,8 @@ now = every minute
 goBackFrom : Signal Time
 goBackFrom =
   Signal.mergeMany [ Signal.constant 0
-                   , Signal.subscribe nearerClick
-                   , Signal.subscribe furtherClick]
+                   , nearerClick.signal
+                   , furtherClick.signal]
 
 timezoneOffset : Signal Time
 timezoneOffset = (\x -> toFloat x * minute)
@@ -105,31 +104,31 @@ timezoneOffset = (\x -> toFloat x * minute)
 
 interval : Signal Interval
 interval = Signal.merge (readInterval <~ intervalInStr)
-                        (Signal.subscribe intervalInput)
+                        intervalInput.signal
 
 criterion : Signal Criterion
 criterion = Signal.merge (readCriterion <~ sortedByInStr)
-                         (Signal.subscribe criterionInput)
+                         criterionInput.signal
 
 searchType : Signal SearchType
 searchType = Signal.merge (readSearchType <~ sortedByInStr)
-                          (Signal.subscribe searchTypeInput)
+                          searchTypeInput.signal
 
 amount : Signal Amount
 amount = Signal.merge (readAmount <~ amountInStr)
-                      (Signal.subscribe amountInput)
+                      amountInput.signal
 
 useRegex : Signal Bool
 useRegex = Signal.merge (readBoolDef useRegexDefault <~ useRegexInStr)
-                        (Signal.subscribe useRegexCheck)
+                        useRegexCheck.signal
 
 sfwOn : Signal Bool
 sfwOn = Signal.merge (readBoolDef sfwDefault <~ sfwInStr)
-                     (Signal.subscribe sfwCheck)
+                     sfwCheck.signal
 
 nsfwOn : Signal Bool
 nsfwOn = Signal.merge (readBoolDef nsfwDefault <~ nsfwInStr)
-                      (Signal.subscribe nsfwCheck)
+                      nsfwCheck.signal
 
 subreddits : Signal Subreddits
 subreddits = (\sfwOn nsfwOn ->
@@ -145,7 +144,7 @@ main = scene <~ Window.width
               ~ nsfwOn
               ~ subreddits
               ~ Signal.merge (String.toLower <~ query)
-                             (Signal.subscribe suggestionClick)
+                             suggestionClick.signal
               ~ criterion
               ~ searchType
               ~ search
@@ -208,13 +207,13 @@ showTimeSpan transF timezoneOffset (start, end) =
   in
     startStr ++ if endStr /= startStr then " - " ++ endStr else ""
 
-nearerClick : Signal.Channel Time
-nearerClick = Signal.channel 0
+nearerClick : Signal.Mailbox Time
+nearerClick = Signal.mailbox 0
 
-furtherClick : Signal.Channel Time
-furtherClick = Signal.channel 0
+furtherClick : Signal.Mailbox Time
+furtherClick = Signal.mailbox 0
 
-last = reverse >> head
+last = reverse >> unsafeHead
 
 showResult : Int -> String -> Bool -> Bool -> Criterion -> SearchType -> String
           -> Interval -> Int -> Time -> Time -> Time -> Element
@@ -247,15 +246,15 @@ showResult w rawName sfwOn nsfwOn criterion searchType search interval amount
     makeTimeElem img = repeat 4 img |> intersperse defaultSpacer |> flow right |> doCenter 24
     nearerElem = makeTimeElem <| image 24 24 "imgs/arrowup.png"
     furtherElem = makeTimeElem <| image 24 24 "imgs/arrowdown.png"
-    firstSeenStart = head spans |> fst
-    firstSeenEnd = head spans |> snd
+    firstSeenStart = unsafeHead spans |> fst
+    firstSeenEnd = unsafeHead spans |> snd
     lastSeen = last spans |> fst
     seenSpan = firstSeenEnd - lastSeen
     oneSpan = firstSeenEnd - firstSeenStart
-    nearerButton = customButton (Signal.send nearerClick
+    nearerButton = customButton (Signal.message nearerClick.address
                                   (firstSeenStart + seenSpan - (oneSpan/2)))
                                 nearerElem nearerElem nearerElem
-    furtherButton = customButton (Signal.send furtherClick lastSeen)
+    furtherButton = customButton (Signal.message furtherClick.address lastSeen)
                                  furtherElem furtherElem furtherElem
     noTimeBtnSpacer = makeTimeElem <| image 24 24 "imgs/bar.png"
     columnElem = linkElems |> asColumns w
@@ -274,12 +273,12 @@ group n l = case l of
 asColumns : Int -> List Element -> Element
 asColumns w elems =
   let
-    maxW = map widthOf elems |> maximum
+    maxW = map widthOf elems |> maximum |> unsafeMaybe
     colCnt = w // (maxW + 2 * widthOf quadDefSpacer + 2) |> max 1
     rowCnt = length elems // colCnt + 1 |> max 5
     rows = group rowCnt elems
     cols = map (flow down) rows
-    maxH = map heightOf cols |> maximum
+    maxH = map heightOf cols |> maximum |> unsafeMaybe
     colSpacer = spacer 2 maxH |> color lightBlue
     paddedColSpacer = flow right [ quadDefSpacer, colSpacer, quadDefSpacer ]
   in
@@ -299,10 +298,10 @@ showInputs : Bool -> Bool -> Bool -> Criterion -> SearchType
           -> Interval -> Amount -> Element
 showInputs useRegex sfwOn nsfwOn criterion searchType interval amount =
   let
-    useRegexCheckBox = checkbox (Signal.send useRegexCheck) useRegex
+    useRegexCheckBox = checkbox (Signal.message useRegexCheck.address) useRegex
       |> width 23
-    sfwCheckBox = checkbox (Signal.send sfwCheck) sfwOn |> width 23
-    nsfwCheckBox = checkbox (Signal.send nsfwCheck) nsfwOn |> width 23
+    sfwCheckBox = checkbox (Signal.message sfwCheck.address) sfwOn |> width 23
+    nsfwCheckBox = checkbox (Signal.message nsfwCheck.address) nsfwOn |> width 23
     labelSizeF = width 120
     rows =
       [ spacer 0 0 |> color bgColor

@@ -1,8 +1,9 @@
 module Layout where
 
-import Color(Color, lightGray, black)
-import Graphics.Element(Element, spacer, flow, down, right)
-import List((::))
+import Color exposing (Color, lightGray, black)
+import Graphics.Element exposing (Element, spacer, flow, down, right
+  , leftAligned)
+import List exposing ((::))
 import List
 import Text
 
@@ -35,6 +36,9 @@ quadDefSpacer = spacer ( 4 * spacerSize) (4 * spacerSize)
 bgColor : Color
 bgColor = lightGray
 
+plainText : String -> Element
+plainText = Text.fromString >> leftAligned
+
 pageWidth : Int
 pageWidth = 450
 
@@ -43,7 +47,7 @@ toSizedText s =
   Text.fromString
   >> Text.height s
   >> Text.color black
-  >> Text.leftAligned
+  >> leftAligned
 
 toSizedTextMod : (Text.Text -> Text.Text) -> Float -> String -> Element
 toSizedTextMod f s =
@@ -51,14 +55,14 @@ toSizedTextMod f s =
   >> f
   >> Text.height s
   >> Text.color black
-  >> Text.leftAligned
+  >> leftAligned
 
 toColText : Color -> String -> Element
 toColText c =
   Text.fromString
   >> Text.height defTextSize
   >> Text.color c
-  >> Text.leftAligned
+  >> leftAligned
 
 defTextSize : Float
 defTextSize = 20

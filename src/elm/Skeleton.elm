@@ -1,12 +1,12 @@
 module Skeleton where
 
-import Color (lightOrange)
-import Graphics.Element (heightOf, flow, down, spacer, color, container
+import Color exposing (lightOrange)
+import Graphics.Element exposing (heightOf, flow, down, spacer, color, container
   , midTop, Element)
-import Layout (defaultSpacer, pageWidth, bgColor, toDefText, toSizedText)
-import List ((::))
-import Footer (footer)
-import Header (header)
+import Layout exposing (defaultSpacer, pageWidth, bgColor, toDefText, toSizedText)
+import List
+import Footer exposing (footer)
+import Header exposing (header)
 
 showPage : Int -> Element -> Element
 showPage w content =

@@ -1,8 +1,8 @@
 module SearchType where
 
-import List(map)
-import Graphics.Element (Element)
-import Graphics.Input (dropDown)
+import List exposing (map)
+import Graphics.Element exposing (Element)
+import Graphics.Input exposing (dropDown)
 import Signal
 
 type SearchType = TitleSearch | TextSearch
@@ -10,8 +10,8 @@ type SearchType = TitleSearch | TextSearch
 defaultSearchType : SearchType
 defaultSearchType = TitleSearch
 
-searchTypeInput : Signal.Channel SearchType
-searchTypeInput = Signal.channel defaultSearchType
+searchTypeInput : Signal.Mailbox SearchType
+searchTypeInput = Signal.mailbox defaultSearchType
 
 readSearchType : String -> SearchType
 readSearchType s =
@@ -32,4 +32,4 @@ searchTypeDropDown current =
     f c = (showSearchType c, c)
     all = [TitleSearch, TextSearch]
   in
-    dropDown (Signal.send searchTypeInput) <| map f all
+    dropDown (Signal.message searchTypeInput.address) <| map f all

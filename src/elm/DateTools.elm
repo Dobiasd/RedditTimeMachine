@@ -1,9 +1,11 @@
 module DateTools where
 
 import Date
-import Interval(Interval)
+import Debug
+import Interval exposing (Interval)
+import Unsafe exposing (unsafeHead)
 
-import List((::), reverse, head, map, filterMap)
+import List exposing ((::), reverse, head, map, filterMap)
 import String
 import Time
 
@@ -24,7 +26,7 @@ iterate : Int -> (a -> a) -> a -> List a
 iterate n f x = if n < 1 then [] else x :: iterate (n-1) f (f x)
 
 last : List a -> a
-last = reverse >> head
+last = reverse >> unsafeHead
 
 applyNTimes : Int -> (a -> a) -> a -> a
 applyNTimes n f x =
@@ -193,7 +195,7 @@ toMaybe x = case x of
   Err _ -> Nothing
 
 readDate : String -> Date.Date
-readDate s = [Date.fromString s] |> map toMaybe |> filterMap identity |> head
+readDate s = [Date.fromString s] |> map toMaybe |> filterMap identity |> unsafeHead
 
 monthToInt m =
   case m of

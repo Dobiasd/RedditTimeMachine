@@ -1,6 +1,6 @@
 module SfwSwitches where
 
-import List(map)
+import List exposing (map)
 import String
 import Signal
 
@@ -40,11 +40,11 @@ sfwDefault = True
 nsfwDefault : Bool
 nsfwDefault = False
 
-sfwCheck : Signal.Channel Bool
-sfwCheck = Signal.channel sfwDefault
+sfwCheck : Signal.Mailbox Bool
+sfwCheck = Signal.mailbox sfwDefault
 
-nsfwCheck : Signal.Channel Bool
-nsfwCheck = Signal.channel nsfwDefault
+nsfwCheck : Signal.Mailbox Bool
+nsfwCheck = Signal.mailbox nsfwDefault
 
 sfw : Subreddits
 sfw = Sfw.sfwRaw |> parseRawSubreddits |> lowerFst

@@ -1,8 +1,8 @@
 module Criterion where
 
-import List(map)
-import Graphics.Element(Element)
-import Graphics.Input (dropDown)
+import List exposing (map)
+import Graphics.Element exposing (Element)
+import Graphics.Input exposing (dropDown)
 import Signal
 
 type Criterion = Relevance | Hot | Top | Comments
@@ -10,8 +10,8 @@ type Criterion = Relevance | Hot | Top | Comments
 defaultCriterion : Criterion
 defaultCriterion = Top
 
-criterionInput : Signal.Channel Criterion
-criterionInput = Signal.channel defaultCriterion
+criterionInput : Signal.Mailbox Criterion
+criterionInput = Signal.mailbox defaultCriterion
 
 readCriterion : String -> Criterion
 readCriterion s =
@@ -35,4 +35,4 @@ criterionDropDown current =
     f c = (showCriterion c, c)
     all = [Top, Hot, Comments, Relevance]
   in
-    dropDown (Signal.send criterionInput) <| map f all
+    dropDown (Signal.message criterionInput.address) <| map f all

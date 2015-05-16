@@ -1,14 +1,15 @@
 module Header where
 
-import Color (lightBlue, darkGray)
-import Graphics.Element (image, link, flow, right, Element, down, container
-  , heightOf, topRight, color, midTop, spacer)
-import Graphics.Input (customButton)
-import List (map, (::), intersperse)
+import Color exposing (lightBlue, darkGray)
+import Graphics.Element exposing (image, link, flow, right, Element, down
+  , container, heightOf, topRight, color, midTop, spacer, leftAligned)
+import Graphics.Input exposing (customButton)
+import List exposing (map, (::), intersperse)
 import Signal
 import Window
 
-import Layout (defaultSpacer, bgColor, toDefText, toSizedText, asGrid)
+import Layout exposing (defaultSpacer, bgColor, toDefText, toSizedText
+  , asGrid)
 import Text
 
 iconSize : Int
@@ -20,8 +21,8 @@ logoHeight = 100
 logoWidth : Int
 logoWidth = 120
 
-clicks : Signal.Channel ()
-clicks = Signal.channel ()
+clicks : Signal.Mailbox ()
+clicks = Signal.mailbox ()
 
 shareIcons : Element
 shareIcons =
@@ -61,7 +62,7 @@ header w =
     title = flow right [
       toSizedText 32 "reddit time machine"
     , Text.fromString " .com"
-      |> Text.height 18 >> Text.color darkGray >> Text.leftAligned
+      |> Text.height 18 >> Text.color darkGray >> leftAligned
     ]
   in
     flow down [
