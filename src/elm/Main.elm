@@ -270,12 +270,19 @@ group n l = case l of
   l -> if | n > 0 -> (take n l) :: (group n (drop n l))
           | otherwise -> []
 
+sign : Int -> Int
+sign x =
+  if | x < 0 -> -1
+     | x == 0 -> 0
+     | otherwise -> 1
+
 asColumns : Int -> List Element -> Element
 asColumns w elems =
   let
     maxW = map widthOf elems |> maximum |> unsafeMaybe
     colCnt = w // (maxW + 2 * widthOf quadDefSpacer + 2) |> max 1
-    rowCnt = length elems // colCnt + 1 |> max 5
+    rowCntRemainderSign = length elems `rem` colCnt |> sign
+    rowCnt = length elems // colCnt + rowCntRemainderSign |> max 5
     rows = group rowCnt elems
     cols = map (flow down) rows
     maxH = map heightOf cols |> maximum |> unsafeMaybe
