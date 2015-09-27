@@ -29,8 +29,24 @@ html,body
   visibility:   hidden;
 }
 
+#cookieRemark
+{
+    visibility: hidden;
+    background: #A6E22E;
+    padding:    0px;
+    height:     0px;
+}
+
+#cookieRemark a:link{
+  background:  #86C21E;
+  font-weight: bold;
+  margin:      4px;
+  padding:     4px;
+}
+
 div#ads
 {
+  background:  #86C21E;
   position:     absolute;
   top:          0px;
   left:         0px;
