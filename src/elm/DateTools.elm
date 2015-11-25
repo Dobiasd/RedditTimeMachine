@@ -30,8 +30,8 @@ last = reverse >> unsafeHead
 
 applyNTimes : Int -> (a -> a) -> a -> a
 applyNTimes n f x =
-  if | n == 0 -> x
-     | otherwise -> iterate (n + 1) f x |> last
+  if n == 0 then x
+  else iterate (n + 1) f x |> last
 
 -- days
 
@@ -100,10 +100,10 @@ lastNMonthsSpans n now =
     map (\x -> (dateAsIntsToTime x, dateAsIntsToTime (ceilMonth x) + oneDay)) starts
 
 ceilMonth : DateAsInts -> DateAsInts
-ceilMonth ({day} as intDate) = { intDate | day <- lastDayInMonth intDate }
+ceilMonth ({day} as intDate) = { intDate | day = lastDayInMonth intDate }
 
 floorMonth : DateAsInts -> DateAsInts
-floorMonth ({day} as intDate) = { intDate | day <- 1 }
+floorMonth ({day} as intDate) = { intDate | day = 1 }
 
 -- years
 
@@ -118,56 +118,57 @@ lastNYearsSpans n now =
 
 ceilYear : DateAsInts -> DateAsInts
 ceilYear ({day, month} as intDate) =
-  { intDate | day <- lastDayInMonth intDate
-            , month <- 12 }
+  { intDate | day = lastDayInMonth intDate
+            , month = 12 }
 
 floorYear : DateAsInts -> DateAsInts
 floorYear ({day, month} as intDate) =
-  { intDate | day <- 1
-            , month <- 1 }
+  { intDate | day = 1
+            , month = 1 }
 
 --
 
 dateAsIntsMinusOneDay : DateAsInts -> DateAsInts
 dateAsIntsMinusOneDay intDate =
   let
-    d' = { intDate | day <- intDate.day - 1 }
+    d' = { intDate | day = intDate.day - 1 }
     minusOneMonthWrongDay = dateAsIntsMinusOneMonth d'
   in
-    if | d'.day < 1 ->
-         { minusOneMonthWrongDay | day <- lastDayInMonth minusOneMonthWrongDay }
-       | otherwise -> d'
+    if d'.day < 1 then
+         { minusOneMonthWrongDay | day = lastDayInMonth minusOneMonthWrongDay }
+    else d'
 
 dateAsIntsMinusOneWeek : DateAsInts -> DateAsInts
 dateAsIntsMinusOneWeek = applyNTimes 7 dateAsIntsMinusOneDay
 
 lastDayInMonth : DateAsInts -> Int
 lastDayInMonth {year, month} =
-  if | month == 1 -> 31
-     | month == 2 -> if year % 4 == 0 then 29 else 28
-     | month == 3 -> 31
-     | month == 4 -> 30
-     | month == 5 -> 31
-     | month == 6 -> 30
-     | month == 7 -> 31
-     | month == 8 -> 31
-     | month == 9 -> 30
-     | month == 10 -> 31
-     | month == 11 -> 30
-     | month == 12 -> 31
+  if month == 1 then 31
+  else if month == 2 then if year % 4 == 0 then 29 else 28
+  else if month == 3 then 31
+  else if month == 4 then 30
+  else if month == 5 then 31
+  else if month == 6 then 30
+  else if month == 7 then 31
+  else if month == 8 then 31
+  else if month == 9 then 30
+  else if month == 10 then 31
+  else if month == 11 then 30
+  else if month == 12 then 31
+  else Debug.crash "lastDayInMonth failed"
 
 dateAsIntsMinusOneMonth : DateAsInts -> DateAsInts
 dateAsIntsMinusOneMonth ({month} as intDate) =
   let
-    d' = { intDate | month <- intDate.month - 1 }
+    d' = { intDate | month = intDate.month - 1 }
     minusOneYearWrongMonth = dateAsIntsMinusOneYear d'
   in
-    if | d'.month < 1 -> { minusOneYearWrongMonth | month <- 12 }
-       | otherwise -> d'
+    if d'.month < 1 then { minusOneYearWrongMonth | month = 12 }
+    else d'
 
 dateAsIntsMinusOneYear : DateAsInts -> DateAsInts
 dateAsIntsMinusOneYear ({year} as intDate) =
-  { intDate | year <- year - 1 }
+  { intDate | year = year - 1 }
 
 dateToDateAsInts : Date.Date -> DateAsInts
 dateToDateAsInts date =

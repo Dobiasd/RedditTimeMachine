@@ -15,11 +15,11 @@ criterionInput = Signal.mailbox defaultCriterion
 
 readCriterion : String -> Criterion
 readCriterion s =
-    if | s == "relevance" -> Relevance
-       | s == "hot" -> Hot
-       | s == "top" -> Top
-       | s == "comments" -> Comments
-       | otherwise -> defaultCriterion
+    if s == "relevance" then Relevance
+    else if s == "hot" then Hot
+    else if s == "top" then Top
+    else if s == "comments" then Comments
+    else defaultCriterion
 
 showCriterion : Criterion -> String
 showCriterion c =

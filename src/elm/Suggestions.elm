@@ -50,10 +50,10 @@ containsNotStartsWith a b = String.contains a b && not (String.startsWith a b)
 
 subscriberCntToStr : Int -> String
 subscriberCntToStr i =
-  if | i > 1000000000 -> toString (i // 1000000000) ++ "G"
-     | i >    1000000 -> toString (i //    1000000) ++ "M"
-     | i >       1000 -> toString (i //       1000) ++ "k"
-     | otherwise      -> toString i
+  if i > 1000000000 then toString (i // 1000000000) ++ "G"
+  else if i >    1000000 then toString (i //    1000000) ++ "M"
+  else if i >       1000 then toString (i //       1000) ++ "k"
+  else toString i
 
 showSubscriberCnt : Int -> Element
 showSubscriberCnt i = "  " ++ subscriberCntToStr i |> Text.fromString

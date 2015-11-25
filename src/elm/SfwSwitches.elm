@@ -1,5 +1,6 @@
 module SfwSwitches where
 
+import Debug
 import List exposing (map)
 import String
 import Signal
@@ -19,7 +20,9 @@ parseRawSubreddits : List String -> Subreddits
 parseRawSubreddits =
   let
     parseRawSubreddit raw = String.split "," raw |>
-      (\[a, b] -> (a, toIntDef 0 b))
+      (\pair -> case pair of
+                  [a, b] -> (a, toIntDef 0 b)
+                  _ -> Debug.crash "parseRawSubreddits failed")
   in
     map parseRawSubreddit
 
@@ -27,9 +30,9 @@ lowerFst : List (String, a) -> List (String, a)
 lowerFst = map (\(s, i) -> (String.toLower s, i))
 
 readBoolDef : Bool -> String -> Bool
-readBoolDef def s = if | s == "false" -> False
-                       | s == "true" -> True
-                       | otherwise -> def
+readBoolDef def s = if s == "false" then False
+                    else if s == "true" then True
+                    else def
 
 showBool : Bool -> String
 showBool b = if b then "true" else "false"

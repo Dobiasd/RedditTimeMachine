@@ -15,11 +15,11 @@ intervalInput : Signal.Mailbox Interval
 intervalInput = Signal.mailbox defaultInterval
 
 readInterval : String -> Interval
-readInterval s = if | s == "days" -> Days
-                    | s == "weeks" -> Weeks
-                    | s == "months" -> Months
-                    | s == "years" -> Years
-                    | otherwise -> defaultInterval
+readInterval s = if s == "days" then Days
+                 else if s == "weeks" then Weeks
+                 else if s == "months" then Months
+                 else if s == "years" then Years
+                 else defaultInterval
 
 showInterval : Interval -> String
 showInterval c =

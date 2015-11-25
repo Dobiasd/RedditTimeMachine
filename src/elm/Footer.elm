@@ -30,9 +30,9 @@ defaultPage : Page
 defaultPage = MainPage
 
 readPage : String -> Page
-readPage s = if | s == "home" -> MainPage
-                | s == "about" -> AboutPage
-                | otherwise -> MainPage
+readPage s = if s == "home" then MainPage
+             else if s == "about" then AboutPage
+             else MainPage
 
 showPageName : Page -> String
 showPageName p =

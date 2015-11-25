@@ -15,9 +15,9 @@ searchTypeInput = Signal.mailbox defaultSearchType
 
 readSearchType : String -> SearchType
 readSearchType s =
-    if | s == "title" -> TitleSearch
-       | s == "text" -> TextSearch
-       | otherwise -> defaultSearchType
+    if s == "title" then TitleSearch
+    else if s == "text" then TextSearch
+    else defaultSearchType
 
 -- https://groups.google.com/forum/#!topic/reddit-dev/SarzNxbLSzI
 showSearchType : SearchType -> String

@@ -10,7 +10,7 @@ import List exposing (any, map, sortBy, reverse, filter, length, map2, repeat
   , intersperse, head, (::), take, drop, maximum)
 import Text
 import Time exposing (every, minute, Time, second, hour)
-import Signal exposing ((<~), (~), Signal)
+import Signal exposing (Signal)
 import Signal
 import String
 import Window
@@ -23,7 +23,7 @@ import About exposing (about)
 import Suggestions exposing (genSuggestions, showSuggestion, maxSuggestions
                   , overflowIndicator, suggestionClick
                   , useRegexCheck, useRegexDefault)
-import Footer exposing (pageClick, readPage, showPageName, Page(MainPage))
+import Footer exposing (pageClick, readPage, showPageName, Page(MainPage, AboutPage))
 import DateTools exposing (lastNDaySpans, showDateAsInts, timeToDateAsInts
                 , lastNWeekSpans, lastNMonthsSpans, lastNYearsSpans)
 import Amount exposing (showAmount, amountDropDown, Amount, readAmount
@@ -66,20 +66,24 @@ port searchTypeInStr : Signal String
 port search : Signal String
 
 currentPage : Signal Page
-currentPage = Signal.merge (readPage <~ pageInStr) pageClick.signal
+currentPage = Signal.merge (Signal.map readPage pageInStr) pageClick.signal
+
+andMap : Signal (a -> b) -> Signal a -> Signal b
+andMap =
+  Signal.map2 (<|)
 
 port staticLinkOut : Signal String
-port staticLinkOut = genStaticLink <~ query ~ useRegex ~ sfwOn ~ nsfwOn ~ criterion ~ searchType ~ search ~ interval ~ amount ~ currentPage
+port staticLinkOut = Signal.map genStaticLink query `andMap` useRegex `andMap` sfwOn `andMap` nsfwOn `andMap` criterion `andMap` searchType `andMap` search `andMap` interval `andMap` amount `andMap` currentPage
 
 port selected : Signal String
 port selected = suggestionClick.signal
 
 port showQueryAndSearch : Signal Bool
-port showQueryAndSearch = (\x -> x == MainPage) <~ currentPage
+port showQueryAndSearch = Signal.map (\x -> x == MainPage) currentPage
 
 port queryColor : Signal String
 port queryColor =
-  (\b -> if b then "PaleGreen" else "LightYellow") <~ isQuerySurelyFound
+  Signal.map (\b -> if b then "PaleGreen" else "LightYellow") isQuerySurelyFound
 
 isQuerySurelyFound : Signal Bool
 isQuerySurelyFound =
@@ -87,7 +91,7 @@ isQuerySurelyFound =
     f srs q = String.isEmpty q
               || q == "all"
               || any (\x -> x == q) (map fst srs)
-  in f <~ subreddits ~ query
+  in Signal.map2 f subreddits query
 
 now : Signal Time
 now = every minute
@@ -99,61 +103,61 @@ goBackFrom =
                    , furtherClick.signal]
 
 timezoneOffset : Signal Time
-timezoneOffset = (\x -> toFloat x * minute)
-                   <~ (Signal.dropRepeats timezoneOffsetInMinutes)
+timezoneOffset = Signal.map (\x -> toFloat x * minute)
+                   (Signal.dropRepeats timezoneOffsetInMinutes)
 
 interval : Signal Interval
-interval = Signal.merge (readInterval <~ intervalInStr)
+interval = Signal.merge (Signal.map readInterval intervalInStr)
                         intervalInput.signal
 
 criterion : Signal Criterion
-criterion = Signal.merge (readCriterion <~ sortedByInStr)
+criterion = Signal.merge (Signal.map readCriterion sortedByInStr)
                          criterionInput.signal
 
 searchType : Signal SearchType
-searchType = Signal.merge (readSearchType <~ sortedByInStr)
+searchType = Signal.merge (Signal.map readSearchType sortedByInStr)
                           searchTypeInput.signal
 
 amount : Signal Amount
-amount = Signal.merge (readAmount <~ amountInStr)
+amount = Signal.merge (Signal.map readAmount amountInStr)
                       amountInput.signal
 
 useRegex : Signal Bool
-useRegex = Signal.merge (readBoolDef useRegexDefault <~ useRegexInStr)
+useRegex = Signal.merge (Signal.map (readBoolDef useRegexDefault) useRegexInStr)
                         useRegexCheck.signal
 
 sfwOn : Signal Bool
-sfwOn = Signal.merge (readBoolDef sfwDefault <~ sfwInStr)
+sfwOn = Signal.merge (Signal.map (readBoolDef sfwDefault) sfwInStr)
                      sfwCheck.signal
 
 nsfwOn : Signal Bool
-nsfwOn = Signal.merge (readBoolDef nsfwDefault <~ nsfwInStr)
+nsfwOn = Signal.merge (Signal.map (readBoolDef nsfwDefault) nsfwInStr)
                       nsfwCheck.signal
 
 subreddits : Signal Subreddits
-subreddits = (\sfwOn nsfwOn ->
+subreddits = Signal.map2 (\sfwOn nsfwOn ->
   (if sfwOn then sfw else []) ++
   (if nsfwOn then nsfw else []) |> sortBy snd |> reverse)
-  <~ sfwOn ~ nsfwOn
+  sfwOn nsfwOn
 
 -- todo: outfactor search options
 main : Signal Element
-main = scene <~ Window.width
-              ~ useRegex
-              ~ sfwOn
-              ~ nsfwOn
-              ~ subreddits
-              ~ Signal.merge (String.toLower <~ query)
+main = Signal.map scene Window.width
+              `andMap` useRegex
+              `andMap` sfwOn
+              `andMap` nsfwOn
+              `andMap` subreddits
+              `andMap` Signal.merge (Signal.map String.toLower query)
                              suggestionClick.signal
-              ~ criterion
-              ~ searchType
-              ~ search
-              ~ interval
-              ~ amount
-              ~ now
-              ~ goBackFrom
-              ~ timezoneOffset
-              ~ currentPage
+              `andMap` criterion
+              `andMap` searchType
+              `andMap` search
+              `andMap` interval
+              `andMap` amount
+              `andMap` now
+              `andMap` goBackFrom
+              `andMap` timezoneOffset
+              `andMap` currentPage
 
 genLink : String -> Criterion -> SearchType -> String -> (Time, Time) -> String
 genLink name criterion searchType search (start, end) =
@@ -234,11 +238,11 @@ showResult w rawName sfwOn nsfwOn criterion searchType search interval amount
     urls = map (genLink name criterion searchType search) spans
     texts = map (showTimeSpan transF timezoneOffset) spans
     spanCnt = length spans
-    textSize = if | spanCnt > 113 -> 16
-                  | spanCnt >  93 -> 18
-                  | spanCnt >  33 -> 20
-                  | spanCnt >  13 -> 22
-                  | otherwise     -> 24
+    textSize = if spanCnt > 113 then 16
+               else if spanCnt >  93 then 18
+               else if spanCnt >  33 then 20
+               else if spanCnt >  13 then 22
+               else 24
     linkElems = map2 (\t url -> toSizedText textSize t |> link url) texts urls
     nearerPossible = firstSeenEnd <= now
     furtherPossible = length spans >= amount
@@ -267,14 +271,14 @@ showResult w rawName sfwOn nsfwOn criterion searchType search interval amount
 group : Int -> List a -> List (List a)
 group n l = case l of
   [] -> []
-  l -> if | n > 0 -> (take n l) :: (group n (drop n l))
-          | otherwise -> []
+  l -> if n > 0 then (take n l) :: (group n (drop n l))
+       else []
 
 sign : Int -> Int
 sign x =
-  if | x < 0 -> -1
-     | x == 0 -> 0
-     | otherwise -> 1
+  if x < 0 then -1
+  else if x == 0 then 0
+  else 1
 
 asColumns : Int -> List Element -> Element
 asColumns w elems =
