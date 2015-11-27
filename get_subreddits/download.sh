@@ -1,6 +1,6 @@
 rm -r sfw
 mkdir sfw
-for i in $(seq 1 34); do
+for i in $(seq 1 36); do
     wget -O ./sfw/$i.txt http://redditlist.com/?page=$i
 done
 

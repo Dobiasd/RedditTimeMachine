@@ -14,4 +14,4 @@ function parse {
 parse sfw Sfw
 parse nsfw Nsfw
 
-echo "please manually remove comma in line 4"
+echo "please manually remove comma in line 4 of Sfw.elm and Nsfw.elm"
