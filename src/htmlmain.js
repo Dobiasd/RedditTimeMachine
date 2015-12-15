@@ -57,10 +57,14 @@ function CheckCookieConsent() {
       cookieConsent = localStorage.getItem("cookieConsent");
       if (cookieConsent == "true"){
         HideCookieRemark();
+        document.getElementById("queryField").style.top = "240px";
+        document.getElementById("searchField").style.top = "492px";
       }
       else
       {
         ShowCookieRemark();
+        document.getElementById("queryField").style.top = "278px";
+        document.getElementById("searchField").style.top = "530px";
       }
     } catch(e) {
       return "";
