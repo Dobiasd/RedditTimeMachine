@@ -74,15 +74,7 @@ topBar w =
 header : Int -> Element
 header w =
     let
-        title =
-            flow
-                right
-                [ toSizedText 32 "reddit time machine"
-                , Text.fromString " .com"
-                    |> Text.height 18
-                    >> Text.color darkGray
-                    >> leftAligned
-                ]
+        title = toSizedText 32 "reddit time machine"
     in
         flow
             down
