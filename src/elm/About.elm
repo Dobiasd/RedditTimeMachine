@@ -1,14 +1,15 @@
-module About where
+module About (..) where
 
 import Graphics.Element exposing (Element)
 import Markdown
 import Skeleton exposing (showPage)
 import Layout exposing (toColText, defaultSpacer)
 
+
 about : Int -> Element
 about w =
-  let
-    content = Markdown.toElement """
+    let
+        content = Markdown.toElement """
 # About
 
 This webpage is not associated with the [official reddit page](http://www.reddit.com).
@@ -34,5 +35,5 @@ Sure! Here it is: [github/Dobiasd/RedditTimeMachine](https://github.com/Dobiasd/
 
 If you have any questions, suggestions or something, just drop an email: info (at) reddittimemachine.com
 """
-  in
-    showPage w content
+    in
+        showPage w content
