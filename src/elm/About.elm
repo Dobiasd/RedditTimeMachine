@@ -33,7 +33,7 @@ Sure! Here it is: [github/Dobiasd/RedditTimeMachine](https://github.com/Dobiasd/
 
 # Contact
 
-If you have any questions, suggestions or something, just drop an email: info (at) reddittimemachine.com
+If you have any questions, suggestions or something, just drop an email: info (at) editgym.com
 """
     in
         showPage w content
