@@ -15,7 +15,7 @@ showPage w content =
 
         footerElem = footer w
 
-        h = heightOf headerElem + heightOf content + heightOf footerElem + 6
+        h = heightOf headerElem + heightOf content + heightOf footerElem + 18
 
         divider =
             flow

@@ -3,7 +3,7 @@
 rm -r build
 mkdir build
 
-elm-make src/elm/Main.elm --output build/js/rtm_uncompressed.js
+/home/tobias/Documents/coding/Elm/elm.0.16/node_modules/elm/binwrappers/elm-make src/elm/Main.elm --output build/js/rtm_uncompressed.js
 
 if [ $? -eq 0 ]
 then

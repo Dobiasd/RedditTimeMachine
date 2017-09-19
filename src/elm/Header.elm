@@ -1,12 +1,12 @@
 module Header (..) where
 
-import Color exposing (lightBlue, darkGray)
+import Color exposing (lightBlue, darkGray, red)
 import Graphics.Element exposing (image, link, flow, right, Element, down, container, heightOf, topRight, color, midTop, spacer, leftAligned)
 import Graphics.Input exposing (customButton)
 import List exposing (map, (::), intersperse)
 import Signal
 import Window
-import Layout exposing (defaultSpacer, bgColor, toDefText, toSizedText, asGrid)
+import Layout exposing (defaultSpacer, bgColor, toDefText, toSizedText, asGrid, toColText)
 import Text
 
 
@@ -75,11 +75,18 @@ header : Int -> Element
 header w =
     let
         title = toSizedText 32 "reddit time machine"
+        subtitle = "CURRENTLY OUT OF ORDER!"
+            |> Text.fromString
+            |> Text.height 42
+            |> Text.color red
+            |> leftAligned
+            |> link "https://www.reddit.com/r/bugs/comments/6wqx35/search_cloudsearch_syntax_timestamp_works/"
     in
         flow
             down
             [ topBar w
             , title |> container w (heightOf title) midTop
+            , subtitle |> container w (heightOf title) midTop
             , logo |> container w (heightOf logo) midTop
             , defaultSpacer
             ]
